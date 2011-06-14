@@ -8,7 +8,7 @@
 <!ENTITY RFC3552 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3552.xml">
 <!ENTITY RFC4627 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.4627.xml">
 ]>
-<rfc category="std" docName="draft-uma-core-v1-00-Rev8" ipr="trust200902">
+<rfc category="std" docName="draft-uma-core-v1-00-Rev9" ipr="trust200902">
   <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
 
   <?rfc toc='yes' ?>
@@ -78,7 +78,7 @@
       </address>
     </author>
 
-    <date day="21" month="May" year="2011" />
+    <date day="13" month="June" year="2011" />
 
     <abstract>
       <t>This specification defines the User-Managed Access (UMA) core
@@ -369,7 +369,7 @@
           parameter, that it uses more than one method for including an access
           token, or that it is otherwise malformed.</t>
 
-          <t>(ISSUE: Refer to OAuth processes for getting a token
+          <t>(ISSUE#11: Refer to OAuth processes for getting a token
           "autonomously" here? Currently there is no section for the
           requester-AM token-getting interaction.)</t>
 
@@ -390,7 +390,7 @@
           requester that the access token provided is expired, revoked,
           malformed, or invalid for other reasons.</t>
 
-          <t>(ISSUE: Refer to OAuth processes for getting a token
+          <t>(ISSUE#11 : Refer to OAuth processes for getting a token
           "autonomously" here? Currently there is no section for the
           requester-AM token-getting interaction.)</t>
 
@@ -442,6 +442,22 @@
         </section>
       </section>
 
+
+      <section anchor="r-am-obtain-token"
+        title="Requester-AM: Requester Obtains Access Token">
+        
+        <t>When a requester is not in posession of a suitable access token
+        to access resources at a host, it requests one from the AM.</t>
+        
+        <t>The requester uses the OAuth2.0 protocol to obtain
+        the access token from the AM.  Here the AM takes-on the role
+        of the OAuth authorization server, where the AM performs
+        the same policy verifications and other related tasks
+        as the OAuth authorization server.</t>
+        
+      </section>
+        
+        
       <section anchor="h-am-token-validation"
                title="Host-AM: Validate Requester's Presented Access Token">
         <t>On receiving a requester's access token in an access attempt, the
@@ -478,7 +494,7 @@ token=sbjsbhs(/SSJHBSUSSJHVhjsgvhsgvshgsv&ipaddr=192.168.1.1
 
         <section title="AM returns a token invalid response">
           <t>If the the AM finds the requester's access token to be invalid,
-          it returns an UMA error message (ISSUE: correct? HTTP success?) to
+          it returns an UMA error message (ISSUE#12: correct? HTTP success?) to
           indicate that the requester's token is invalid.</t>
 
           <figure>
@@ -563,7 +579,7 @@ Cache-Control: no-store
         AM's registration endpoint, providing its host access token to get
         authorized access to this endpoint. The body of the HTTP request
         message contains a JSON document providing the requester's access
-        token and the requested scope. (ISSUE: How to structure the body to
+        token and the requested scope. (ISSUE#13: How to structure the body to
         include the scope and also the requester's access token?)</t>
 
         <t>The requested scope is an object with the name "requested_scope"
@@ -587,7 +603,7 @@ Cache-Control: no-store
 
         <t>On receiving the scope registration request from the Host, the AM
         issues a response message that has one of the possible following
-        outputs: (ISSUE: Needs work!)<list style="symbols">
+        outputs: (ISSUE#06: Design needs to be completed)<list style="symbols">
             <t>A scope request ticket, which typically has a short life-time,
             and its expiration time.</t>
 
@@ -611,7 +627,7 @@ Cache-Control: no-store
 
         <t>The Requester performs a GET on the access token URL, using the
         standard HTTP "Accept" header to express the acceptable media type(s)
-        of any claims-required list. (ISSUE: Need to unify the request for
+        of any claims-required list. (ISSUE#14: Need to unify the request for
         authorization with the providing of claims, so that this can be a
         single request-response pattern that can loop as required.)</t>
 
@@ -639,13 +655,16 @@ Cache-Control: no-store
         type in the "Content-Type" header.</t>
 
         <t>If the content-type is not recognized by the AM, the AM will reject
-        the document. (ISSUE: what happens then? Should be an error from the
-        AM.)</t>
+         the document. 
+         (ISSUE#15: If the content-type (of the claims response document)
+         is not recognized by the AM, what happens then? 
+         Should be an error from the AM.)</t>
 
         <t>If the AM accepts the claims document submitted by the requester,
         the AM responds with a successful or unsuccessful access token
-        response, or with another claims-required response. (ISSUE: Eventually
-        need some special claim types that allow for the trusted-claims model
+        response, or with another claims-required response. 
+        (ISSUE#16: Eventually need some special claim types that 
+        allow for the trusted-claims model
         to unfold.)</t>
 
         <t>This specification does not define the formats of required-claims
@@ -746,7 +765,7 @@ Cache-Control: no-store
               <t
               hangText="http://kantarainitiative.org/confluence/display/uma/claim_formats"><vspace />
               OPTIONAL (zero or more). Claim format supported by this AM.
-              Options are (ISSUE: fill in).</t>
+              Options are (ISSUE#17: fill in. Need to say what claims format is supported).</t>
             </list></t>
 
           <t>Link relationship rel values for the endpoint URLs for the host:
@@ -992,6 +1011,7 @@ Cache-Control: no-store
             <artwork><![CDATA[{
         "resource_set":
             {
+            "_id":  "112210f47de98100",
             "name": "Photo album",
             "icon_uri": "http://www.example.com/icons/flower",
             "actions":
@@ -1097,7 +1117,7 @@ Cache-Control: no-store
         <figure>
           <preamble>HTTP request:</preamble>
 
-          <artwork><![CDATA[PUT /host/{hostid}/user/{userid}/resource/{resourceid}
+          <artwork><![CDATA[PUT /host/{hostid}/resource/{resourceid}
 Content-Type: application/json
 ...
 
@@ -1122,7 +1142,7 @@ Location: (URL of the created resource, same as that which was PUT.)
         <figure>
           <preamble>HTTP request:</preamble>
 
-          <artwork><![CDATA[GET /host/{hostid}/user/{userid}/resource/{resourceid} HTTP/1.1
+          <artwork><![CDATA[GET /host/{hostid}/resource/{resourceid} HTTP/1.1
 ...]]></artwork>
         </figure>
 
@@ -1151,11 +1171,19 @@ ETag: (entity tag of the resource artifact)
                title="Update Resource Set Description">
         <t>Updates a previously registered resource set description using the
         PUT method.</t>
+        
+        <t>This API is different from the create new resource set description
+          (<xref target="create-resource-set"></xref>) because it assumes
+          that prior registration of the resource has occured.</t>
+        
+        <t>(ISSUE#27: Can Update Resource Set Description API 
+          mistakenly overwrite/destroy an existing
+        resource description?).</t>
 
         <figure>
           <preamble>HTTP request:</preamble>
 
-          <artwork><![CDATA[PUT /host/{hostid}/user/{userid}/resource/{resourceid}
+          <artwork><![CDATA[PUT /host/{hostid}/resource/{resourceid}
 Content-Type: application/json
 If-Match: (entity tag of the resource if operation is to be idempotent)
 ...
@@ -1186,7 +1214,7 @@ If-Match: (entity tag of the resource if operation is to be idempotent)
         <figure>
           <preamble>HTTP request:</preamble>
 
-          <artwork><![CDATA[DELETE /host/{hostid}/user/{userid}/resource/{resourceid}
+          <artwork><![CDATA[DELETE /host/{hostid}/resource/{resourceid}
 If-Match: (entity tag of the resource if operation to be idempotent)
 ...]]></artwork>
         </figure>
@@ -1444,7 +1472,7 @@ Content-Type: application/json
       prevent a host from interacting with a registration area not its
       own.</t>
 
-      <t>(ISSUE: Other stuff goes here too. Provide commentary on any
+      <t>(ISSUE#18: Other stuff goes here too. Provide commentary on any
       requirements layered on the forthcoming OAuth security considerations
       section; discuss UMA-layer implications for more meaningful
       authentication of requesters/requesting parties; discuss implications of
@@ -1462,7 +1490,7 @@ Content-Type: application/json
       identifiers in order to avoid leaking personally identifiable
       information to requesters through the "scope" mechanism.</t>
 
-      <t>(ISSUE: Other stuff goes here too.)</t>
+      <t>(ISSUE#19: Other stuff goes here too. More privacy considerations.)</t>
     </section>
 
     <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
@@ -1505,41 +1533,119 @@ Content-Type: application/json
     <section title="Issues">
       <t>Catalog of issues (some noted within the text above as well,
       indicated by "ISSUE"):<list style="numbers">
-          <t>Need to specify options for claim formats in the XRD.</t>
+          <t>ISSUE#01: Need to specify options for claim formats in the XRD.</t>
 
-          <t>Need to clarify how the requester's user authorization endpoint
+        <t>ISSUE#02: Need to clarify how the requester's user authorization endpoint
           would be used in an UMA (vs. an OAuth) fashion for collecting
           synchronous authorizing user consent in Phase 2, based on a
           privileged type of claim request.</t>
 
-          <t>Do we need to specify explicitly a means for the requester to get
+        <t>ISSUE#03: Do we need to specify explicitly a means for the requester to get
           a new or refreshed access token from the AM, or can we mostly just
           refer to OAuth for this? Right now this interaction type doesn't
           have its own section.</t>
 
-          <t>Need to specify the format of the token validation request
+        <t>ISSUE#04: Need to specify the format of the token validation request
           message. Can Maciej supply what they're using?</t>
 
-          <t>When the token is invalid, what's the current OAuth thinking on
+        <t>ISSUE#05: When the token is invalid, what's the current OAuth thinking on
           what we should return? Is there any reason not to copy OAuth as
           closely as possible in this case? Or should a token status of
           "invalid" be used, and returned as success (unifying the different
           kinds of responses to the validation request)?</t>
 
-          <t>Need to complete the design of the requested-scope registration
+        <t>ISSUE#06: Need to complete the design of the requested-scope registration
           interaction and its associated error messages.</t>
 
-          <t>Need to complete the design of the authorization request
+        <t>ISSUE#07: Need to complete the design of the authorization request
           interaction and its associated error messages.</t>
 
-          <t>Sort out whether resource set descriptions are supposed to use
+        <t>ISSUE#08: Sort out whether resource set descriptions are supposed to use
           scope URIs or scope identifiers! It's inconsistent now.</t>
 
-          <t>Move the resource registration API section to be a subsection
+        <t>ISSUE#09: Move the resource registration API section to be a subsection
           under the previous big section.</t>
 
-          <t>Copy over the resource set description and scope description
+        <t>ISSUE#10: Copy over the resource set description and scope description
           content.</t>
+        
+        <t>ISSUE#11:Refer to OAuth processes for getting a token
+          "autonomously" here? Currently there is no section for the
+          requester-AM token-getting interaction. 
+          RESOLUTION#11: a new section has been added, to discuss
+          about the usage of OAuth flow for the requester 
+          to gen a token from the AM.</t>
+        
+        <t>ISSUE#12:  If the the AM finds the requester's access token to be invalid,
+          it returns an UMA error message (ISSUE#12: correct? HTTP success?) to
+          indicate that the requester's token is invalid.</t>
+        
+        <t>ISSUE#13: How to structure the body to
+        include the scope and also the requester's access token?</t>
+        
+        <t>ISSUE#14: Need to unify the request for
+        authorization with the providing of claims, so that this can be a
+        single request-response pattern that can loop as required.</t>
+        
+        <t>ISSUE#15: If the content-type (of the claims response document)
+        is not recognized by the AM, what happens then? 
+        Should be an error from the AM.</t>
+        
+        <t>ISSUE#16: Eventually need some special claim types that 
+        allow for the trusted-claims model to unfold.</t>
+        
+        <t>ISSUE#17: fill in. Need to say what claims format is supported.</t>
+        
+        <t>ISSUE#18: Provide commentary on any
+          requirements layered on the forthcoming OAuth security considerations
+          section; discuss UMA-layer implications for more meaningful
+          authentication of requesters/requesting parties; discuss implications of
+          user-mediated AM/host trust model; discuss short-lived token technique
+          for lightweight requester correlation...</t>
+        
+        <t>ISSUE#19: Other stuff goes here too. More privacy considerations.</t>
+        
+        <t>ISSUE#20: From Lukasz email 6/6/2011: 
+          Rev8 Section 2.2: +1 for validation request in json format 
+          instead of application/x-www-form-urlencoded. </t>
+        
+        <t>ISSUE#21: From Lukasz email 6/6/2011: 
+          Rev8 Section 2.4: AM adds a scope to the requester's access token. 
+          Maybe I am missing something but I don't see the explanation in the 
+          spec how requester's token is issued at first. 
+          I think some parts are mutual for the host and the requester 
+          i.e. AM Discovery, optional Dynamic Client Registration.  </t>
+        
+        <t>ISSUE#22: From Lukasz email 6/6/2011: 
+          Rev8 Section 3.4.2: Example is missing required '_id' parameter.  
+          ACTION#22: '_id' parameter added.</t>
+        
+        <t>ISSUE#23: From Lukasz email 6/6/2011: 
+          Rev8 Section 4: 403 Forbidden response when: 'unsupported method or host ID 
+          not matching the presented host access token'. 
+          I think AM should return 403 in case of performing operations on 
+          resources of different user (not owned resources at this same host), 
+          instead of returning 404 Not Found to not disclose 
+          presence of the resource set at the AM. </t>
+        
+        <t>ISSUE#24: From Lukasz email 6/6/2011: 
+          Rev8 Section 4.1: Empty response body? 
+          In SAM we return 'resource_id' and 'policy_uri' 
+          so that the host can redirect the user to 
+          the policy definition page (sharing setting screen) on AM. </t>
+        
+        <t>ISSUE#25: From Lukasz email 6/6/2011: 
+        Section 4.1 - what happens when a resource (being registered) already exists?</t>
+        
+        <t>ISSUE#26: From Lukasz email 6/6/2011: 
+          Section 4.1 to 4.4: URLs in the examples mistakenly contains '/user/{userid}'.
+          ACTION#26: examples have been corrected.</t>
+        
+        <t>ISSUE#27: Can Update Resource Set Description API 
+          mistakenly overwrite/destroy an existing
+          resource description?.  (<xref target="update-resource-set"></xref>)
+        </t>
+        
         </list></t>
     </section>
   </middle>
@@ -1634,12 +1740,17 @@ Content-Type: application/json
     <section anchor="History" title="Document History">
       <t>NOTE: To be removed by RFC editor before publication as an RFC</t>
       
+      
+      <t>Changes in Rev 9:<list style="symbols">
+        <t>Added new top-level section on Requester obtaining
+        an acces token from the AM.</t>
+      </list></t>
+        
+        
       <t>Changes in Rev 8:<list style="symbols">
         <t>Added sections on Action Descriptions and Resource Set Descriptions.
         Text obtained from the Resource Registration doc, which is being
         discontinued.</t>
-        
-
       </list></t>
 
       <t>Changes in Rev 7:<list style="symbols">
