@@ -8,7 +8,7 @@
 <!ENTITY RFC3552 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3552.xml">
 <!ENTITY RFC4627 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.4627.xml">
 ]>
-<rfc category="std" docName="draft-uma-core-v1-00-Rev9" ipr="trust200902">
+<rfc category="std" docName="draft-uma-core-v1-00-Rev10" ipr="trust200902">
   <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
 
   <?rfc toc='yes' ?>
@@ -49,7 +49,7 @@
     </author>
 
     <author fullname="Paul Bryan" initials="P" surname="Bryan">
-      <organization>?</organization>
+      <organization>pbryan.net</organization>
 
       <address>
         <email>email@pbryan.net</email>
@@ -78,7 +78,7 @@
       </address>
     </author>
 
-    <date day="13" month="June" year="2011" />
+    <date day="22" month="June" year="2011" />
 
     <abstract>
       <t>This specification defines the User-Managed Access (UMA) core
@@ -105,7 +105,11 @@
       host sites, through a single authorization manager (AM) that makes
       access decisions based on user policy.</t>
 
-      <t>For example, a web user (authorizing user) can authorize a web app
+      <t>There are numerous use-cases for UMA, where a resource owner
+        nominates a third-party to control access to these resources
+        without the presence of the resource owner.
+        A typical example is the following.
+        A web user (authorizing user) can authorize a web app
       (requester) to gain one-time or ongoing access to a resource containing
       his home address stored at a "personal data store" service (host), by
       telling the host to act on access decisions made by his authorization
@@ -114,7 +118,11 @@
       the user himself to assist him/her in arranging for shipping a purchased
       item, or it might be his friend who is using an online address book
       service to collect addresses, or it might be a survey company that uses
-      an online service to compile population demographics.</t>
+      an online service to compile population demographics.
+      Other use-cases and scenarios for UMA can be found
+      in the UMA Scenarios and Use-Cases 
+      document (<xref target="UMA-usecases"></xref>).
+       </t>
 
       <t>In enterprise settings, application access management often involves
       letting back-office applications serve only as policy enforcement points
@@ -138,6 +146,34 @@
       This API is itself OAuth-protected. Thus, the overall UMA flow has a
       second embedded OAuth-based interaction within it governing the host-AM
       relationship.</t>
+      
+      <figure align="center" anchor="uma_figure1">
+        <preamble>Three (3) Phases of the UMA Protocol</preamble>
+        
+        <artwork align="left"><![CDATA[
+                        
+                                 +-----------------+
+                                |   Authorizing   |
+          +----Manage-----------+     user/UA     |
+          |                     +-----------------+
+          |                             |
+          |                          Control
+          |                             v(UI)
+          v(UI)                +--------+----------+
+  +----------------+(client)   |   Authorization   |
+  |      Host      |<--Protect-|      manager      |
+  +----------------+     (API) +-------------------+
+          ^(API)                        |(API)
+          |                         Authorize
+          |                             v(client)
+          |                     +-----------------+
+          +----Access-----------|    Requester    |
+                        (client)+-----------------+
+                        
+            ]]></artwork>
+        
+      </figure>
+      
 
       <t>UMA has the following three broad phases: <list style="symbols">
           <t>Phase 1: Protect a resource: This phase involves only the
@@ -199,7 +235,7 @@
             resource.</t>
 
             <t hangText="protected resource"><vspace />An access-restricted
-            resource at a host.</t>
+            resource at a host, which is being policy-protected by the AM.</t>
 
             <t hangText="host"><vspace />An UMA-defined variant of an OAuth
             resource server that enforces access to the protected resources it
@@ -240,6 +276,30 @@
             associated with a requester access token.</t>
           </list></t>
       </section>
+      
+      <section title="End-Point Names">
+        <t><list hangIndent="6" style="hanging">
+          
+          <t hangText="Host Registration Endpoint">This is the end-point
+            at the AM to which the host register resources which the AM needs to protect.</t>
+          
+          <t hangText="Protected Resource Endpoint">This is the end-point
+          at the host to which a requester accesses resources.</t>
+          
+          <t hangText="Token Validation Endpoint">This is the end-point
+          at the AM to which the host submits tokens to be validated by the AM.</t>
+          
+          <t hangText="Scope Registration Endpoint">This is the end-point
+            at the AM to which the host registers scopes pertaining to 
+            resources under the hosts's protection.</t>
+          
+          <t hangText="Authorization Endpoint">This is the end-point
+            at the AM to which the requester submits requests for authorization tokens.</t>
+          
+          
+        </list></t>
+      </section>
+      
     </section>
 
     <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
@@ -261,8 +321,8 @@
       response to an failed access attempt, the requester itself engages in
       embedded interactions with the AM before re-attempting access. The
       pairwise interactions can be summarized as follows:<list style="numbers">
-          <t>Requester-host: Attempt access at protected resource. This is the
-          master interaction. The host's response, and usage of other embedded
+          <t>Requester-host: Attempt access at protected resource. 
+            The host's response, and usage of other embedded
           interactions, varies depending on whether the requester presents a
           token, whether the token is valid, and whether the token is
           associated with a scope that allows for the type of access
@@ -449,12 +509,36 @@
         <t>When a requester is not in posession of a suitable access token
         to access resources at a host, it requests one from the AM.</t>
         
-        <t>The requester uses the OAuth2.0 protocol to obtain
-        the access token from the AM.  Here the AM takes-on the role
-        of the OAuth authorization server, where the AM performs
-        the same policy verifications and other related tasks
-        as the OAuth authorization server.</t>
+        <t>When possible the requester SHOULD use the the OAuth2.0
+        client credentials flow which is defined in the
+        OAuth2.0 specification (Section 4.4 of <xref target="OAuth2"></xref>).
+        </t>
         
+        <t>As mentioned before, the UMA process for the requester obtaining
+          an access token expands upon the basic OAuth2.0 process for
+          getting a token.
+          In particular,
+          in the absence of an access token with the correct scope
+          (eg. obtained by the requester from the AM by
+          it asking the AM for authorization for scoped access
+          in  <xref target="r-am-authz-scope"></xref>),
+          the access token issued in the current interaction
+          signifies only a binding of this current requester
+          with the given host and the given AM instance.
+          The expectation is that the token to be reused 
+          for all resources and all scopes of
+          access that might be sought at this host protected by this AM.
+        </t>
+        
+        <t>In the case where the requester does not yet have a unique
+        credential and where the AM demands such a unique credential,
+        it is recommended that the requester use the 
+        dynamic registration protocol
+        (see <xref target="Dyn-Reg">Dyn-Reg</xref>).
+          The dynamic registration protocol allows the AM
+          to provide the requester with a unique client identifier and
+          optionally a client secret in a dynamic fashion. 
+        </t>        
       </section>
         
         
@@ -479,11 +563,11 @@
         request.</t>
 
         <figure>
-          <preamble>Example of a request to the token verification endpoint
+          <preamble>Example of a request to the token validation endpoint
           that provides the host access token in the header:</preamble>
 
           <artwork><![CDATA[
-POST /token_verification HTTP/1.1
+POST /token_validation HTTP/1.1
 Host: am.example.com
 Authorization: OAuth vF9dft4qmT
 Content-Type: application/x-www-form-urlencoded     
@@ -647,10 +731,13 @@ Cache-Control: no-store
             indicated by the requester as acceptable.</t>
           </list></t>
 
-        <t>If in this step user policy demands more information from the
-        Requester and the requester received a claims-required response, then
-        the requester needs to satisfy all the claims listed there. Once the
-        Requester completes preparing the claims document, it performs a POST
+        <t>Note that the claims-required list from the AM
+          may provide a choice of the sets of claims to be satisfied.
+          This allows the requester to select one set of claims
+          which it can readily satisfy in order to obtained the needed
+          scoped access.</t>
+        
+          <t>Once the Requester completes preparing the claims document, it performs a POST
         of that document to the authorization negotiation URL, specifying its
         type in the "Content-Type" header.</t>
 
@@ -1713,6 +1800,19 @@ Content-Type: application/json
           </author>
 
           <date year="2010" />
+        </front>
+      </reference>
+      
+      <reference anchor="UMA-usecases"
+        target="http://kantarainitiative.org/confluence/display/uma/UMA+Scenarios+and+Use+Cases">
+        <front>
+          <title>UMA Scenarios and Use-Cases</title>
+          
+          <author initials="E." surname="Maler">
+            <organization>Kantara</organization>
+          </author>
+          
+          <date year="2011" />
         </front>
       </reference>
 
