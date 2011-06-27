@@ -8,7 +8,7 @@
 <!ENTITY RFC3552 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3552.xml">
 <!ENTITY RFC4627 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.4627.xml">
 ]>
-<rfc category="std" docName="draft-uma-core-v1-00-Rev10" ipr="trust200902">
+<rfc category="std" docName="draft-uma-core-v1-00-Rev11" ipr="trust200902">
   <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
 
   <?rfc toc='yes' ?>
@@ -78,7 +78,7 @@
       </address>
     </author>
 
-    <date day="22" month="June" year="2011" />
+    <date day="26" month="June" year="2011" />
 
     <abstract>
       <t>This specification defines the User-Managed Access (UMA) core
@@ -87,13 +87,12 @@
       an authorization manager that makes access decisions based on user
       policy.</t>
 
-      <t>This document is a product of the User-Managed Access Work Group of
-      the Kantara Initiative. It is currently under active development. It has
-      not yet been submitted to the IETF. The User-Managed Access Work Group
-      operates under Kantara IPR Policy - Option Patent and Copyright:
-      Reciprocal Royalty Free with Opt-Out to Reasonable And Non
-      discriminatory (RAND) and the publication of this document is governed
-      by the policies outlined in this option.</t>
+      <t>This document is a draft Report of the User-Managed Access Work Group
+      of the Kantara Initiative. The User-Managed Access Work Group operates
+      under Kantara IPR Policy - Option Patent and Copyright: Reciprocal
+      Royalty Free with Opt-Out to Reasonable And Non discriminatory (RAND)
+      and the publication of this document is governed by the policies
+      outlined in this option.</t>
     </abstract>
   </front>
 
@@ -105,11 +104,10 @@
       host sites, through a single authorization manager (AM) that makes
       access decisions based on user policy.</t>
 
-      <t>There are numerous use-cases for UMA, where a resource owner
-        nominates a third-party to control access to these resources
-        without the presence of the resource owner.
-        A typical example is the following.
-        A web user (authorizing user) can authorize a web app
+      <t>There are numerous use cases for UMA, where a resource owner
+      nominates a third party to control access to these resources potentially
+      without the real-time presence of the resource owner. A typical example
+      is the following. A web user (authorizing user) can authorize a web app
       (requester) to gain one-time or ongoing access to a resource containing
       his home address stored at a "personal data store" service (host), by
       telling the host to act on access decisions made by his authorization
@@ -118,11 +116,10 @@
       the user himself to assist him/her in arranging for shipping a purchased
       item, or it might be his friend who is using an online address book
       service to collect addresses, or it might be a survey company that uses
-      an online service to compile population demographics.
-      Other use-cases and scenarios for UMA can be found
-      in the UMA Scenarios and Use-Cases 
-      document (<xref target="UMA-usecases"></xref>).
-       </t>
+      an online service to compile population demographics. Other scenarios
+      and use cases for UMA usage can be found in (<xref
+      target="UMA-usecases"></xref>) and <xref
+      target="UMA-userstories"></xref>.</t>
 
       <t>In enterprise settings, application access management often involves
       letting back-office applications serve only as policy enforcement points
@@ -146,63 +143,67 @@
       This API is itself OAuth-protected. Thus, the overall UMA flow has a
       second embedded OAuth-based interaction within it governing the host-AM
       relationship.</t>
-      
-      <figure align="center" anchor="uma_figure1">
-        <preamble>Three (3) Phases of the UMA Protocol</preamble>
-        
-        <artwork align="left"><![CDATA[
-                        
-                                 +-----------------+
-                                |   Authorizing   |
-          +----Manage-----------+     user/UA     |
-          |                     +-----------------+
-          |                             |
-          |                          Control
-          |                             v(UI)
-          v(UI)                +--------+----------+
-  +----------------+(client)   |   Authorization   |
-  |      Host      |<--Protect-|      manager      |
-  +----------------+     (API) +-------------------+
-          ^(API)                        |(API)
-          |                         Authorize
-          |                             v(client)
-          |                     +-----------------+
-          +----Access-----------|    Requester    |
-                        (client)+-----------------+
-                        
-            ]]></artwork>
-        
+
+      <t>The UMA protocol has three broad phases (see <xref
+      target="UMA-phases"></xref>).</t>
+
+      <figure align="center" anchor="UMA-phases">
+        <preamble>The Three Phases of the UMA Protocol</preamble>
+
+        <artwork align="left"><![CDATA[                                   +-----+----------------+
+                                   | UA  |  authorizing   |
+               +-------Manage (A)--|     |      user      |
+               |                   +-----+----------------+
+               |   Phase 1:              |       UA       |
+               |   protect a             +----------------+
+               |   resource                      |
+               |                            Control (B)
+               |                                 |
+               v                                 v
+        +-----------+              +-----+----------------+
+        |   host    |<-Protect-(C)-|prot | authorization  |
+        |           |              | API |  manager (AM)  |
+        +-----------+              +-----+----------------+
+        | protected |                    | authorization  |
+        | resource  |                    |      API       |
+        +-----------+                    +----------------+
+               ^                                 |
+               |   Phases 2 and 3:         Authorize (D)
+               |   get authz and                 |
+               |   access a resource             v
+               |                         +----------------+
+               +-------Access (E)--------|   requester    |
+                                         +----------------+
+                                         (requesting party)]]></artwork>
       </figure>
-      
 
-      <t>UMA has the following three broad phases: <list style="symbols">
-          <t>Phase 1: Protect a resource: This phase involves only the
-          authorizing user, host, and AM. The authorizing user introduces a
-          Host to an AM, the host obtains a host access token to use at the
-          AM's protection interface, and the host tells the AM the sets of
-          resources which it seeks to be protected . Phase 1 assumes that the
-          user also instructs the AM what policies to attach to the registered
-          resource sets, but this activity is out of band for UMA. This phase
-          has no analogy with OAuth. It is described in <xref
-          target="protecting-a-resource"></xref>.</t>
+      <t>The phases work as follows: <list style="numbers">
+          <t>Protect a resource: This phase involves the authorizing user,
+          host, and AM. The authorizing user has chosen to use a host for
+          managing online resources ("A"), and introduces this host to an AM
+          using an OAuth-mediated interaction that results in the AM giving
+          the host an access token. The host uses AM's protection interface to
+          tell the AM what sets of resources to protect ("C"). Out of band of
+          the UMA protocol, the authorizing user instructs the AM what
+          policies to attach to the registered resource sets ("B"). This phase
+          is described in <xref target="protecting-a-resource"></xref>.</t>
 
-          <t>Phase 2: Get authorization: This phase involves a requester for
-          the first time, along with the host and AM, and it may or may not
-          involve synchronous involvement by the authorizing user. This phase
-          is dominated by a loop of activity in which the requester approaches
-          the host seeking access, is sent to obtain an access token from the
-          AM if it does not have one, and then must demonstrate to the AM that
-          it satisfies the user's authorization policy governing the
-          sought-for resource and scope of access if the host discovers that
-          it does not have the requisite authorization. This phase is
-          analogous to OAuth's "get a token" phase, though it is more
-          complex.</t>
+          <t>Get authorization: This phase involves the requester, host, and
+          AM. It may also involve synchronous involvement by the authorizing
+          user if this person is synonymous with the requesting party. This
+          phase is dominated by a loop of activity in which the requester
+          approaches the host seeking access to a protected resource ("E"), is
+          sent to obtain an access token from the AM if it does not have one,
+          and then must demonstrate to the AM that it satisfies the user's
+          authorization policy governing the sought-for resource and scope of
+          access if the host discovers that it does not have the requisite
+          authorization ("D"). This phase is described in <xref
+          target="getting-authz-accessing-resource"></xref>.</t>
 
-          <t>Phase 3: Access a resource: This phase involves the requester
-          successfully wielding an access token that has sufficient
-          authorization associated with it at the host to gain access to the
-          desired resource. This phase is analogous to OAuth's "use a token"
-          phase. Phases 2 and 3 together are described in <xref
+          <t>Access a resource: This phase involves the requester successfully
+          presenting an access token that has sufficient permission associated
+          with it to the host in order to gain access to the desired resource
+          ("E"). This phase is described along with Phase 2 in <xref
           target="getting-authz-accessing-resource"></xref>.</t>
         </list></t>
 
@@ -211,11 +212,6 @@
         'SHOULD', 'SHOULD NOT', 'RECOMMENDED', 'MAY', and 'OPTIONAL' in this
         document are to be interpreted as described in <xref
         target="RFC2119"></xref>.</t>
-
-        <t>This document uses the Augmented Backus-Naur Form (ABNF) notation
-        of <xref target="ID-ietf-httpbis-p1-messaging"></xref>. Additionally,
-        the realm and auth-param rules are included from <xref
-        target="RFC2617"></xref>.</t>
 
         <t>Unless otherwise noted, all the protocol parameter names and values
         are case sensitive.</t>
@@ -256,120 +252,910 @@
             OAuth client that seeks access to a protected resource.</t>
 
             <t hangText="requester access token"><vspace />An access token
-            that can be associated with the authorizing user's consent for a
-            requester's access to particular resources at a host.</t>
+            that can be associated with the authorizing user's authorization
+            for a requester's access to particular resources at a host on
+            behalf of a particular requesting party.</t>
 
             <t hangText="requesting party"><vspace />A web user, or a
             corporation or other legal person, that uses a requester to seek
             access to a protected resource.</t>
 
             <t hangText="resource set description"><vspace />A JSON-formatted
-            data structure that represents a set of one or more resources to
-            be AM-protected and maps possible scopes to them.</t>
+            document that represents a set of one or more resources to be
+            AM-protected and maps possible scopes to them. The host registers
+            a resource set by giving this document to the AM.</t>
 
-            <t hangText="scope description">A JSON-formatted data structure
-            that represents a scope of access on a particular resource
-            set.</t>
+            <t hangText="scope description">A JSON-formatted document that
+            represents a scope of access on a particular resource set. The
+            host refers to this type of document from within resource set
+            descriptions.</t>
 
-            <t hangText="token status description">A JSON-formatted data
-            structure that represents the currently authorized scopes
-            associated with a requester access token.</t>
+            <t hangText="token status description">A JSON-formatted document
+            that represents the currently authorized scopes associated with a
+            requester access token.</t>
+
+            <t hangText="permission">A scope of access over a particular
+            resource set at a particular host that is being asked for by a
+            requester or that has been granted by an AM.</t>
           </list></t>
       </section>
-      
-      <section title="End-Point Names">
+
+      <section title="Endpoint Names">
         <t><list hangIndent="6" style="hanging">
-          
-          <t hangText="Host Registration Endpoint">This is the end-point
-            at the AM to which the host register resources which the AM needs to protect.</t>
-          
-          <t hangText="Protected Resource Endpoint">This is the end-point
-          at the host to which a requester accesses resources.</t>
-          
-          <t hangText="Token Validation Endpoint">This is the end-point
-          at the AM to which the host submits tokens to be validated by the AM.</t>
-          
-          <t hangText="Scope Registration Endpoint">This is the end-point
-            at the AM to which the host registers scopes pertaining to 
-            resources under the hosts's protection.</t>
-          
-          <t hangText="Authorization Endpoint">This is the end-point
-            at the AM to which the requester submits requests for authorization tokens.</t>
-          
-          
-        </list></t>
+            <t hangText="host access token endpoint">Part of the protection
+            API at the AM used by the host (and part of standard OAuth). The
+            endpoint at the AM at which the host asks for a host access token
+            on the authorizing user's behalf.</t>
+
+            <t hangText="host user authorization endpoint">Part of the
+            protection API at the AM used by the host (and part of standard
+            OAuth). The endpoint at the AM to which the host redirects the
+            authorizing user to authorize the host to use this AM for
+            protecting resources, if the authorization code flow is being
+            used.</t>
+
+            <t hangText="host registration endpoint">Part of the protection
+            API at the AM used by the host. The endpoint at the AM at which
+            the host registers both resource sets which the AM needs to
+            protect and also permissions that a requester will be asking
+            for.</t>
+
+            <t hangText="token validation endpoint">Part of the protection API
+            at the AM used by the host. The endpoint at the AM at which the
+            host submits requester access tokens to be validated by the
+            AM.</t>
+
+            <t hangText="protected resource endpoint">An endpoint at the host
+            at which a requester accesses resources. This can be a singular
+            API endpoint, one of a set of API endpoints, a URI corresponding
+            to an HTML document, or any other Web-accessible URI.</t>
+
+            <t hangText="requester access token endpoint">Part of the
+            authorization API at the AM used by the requester (and part of
+            standard OAuth). The endpoint at the AM at which the requester
+            asks for a requester access token.</t>
+
+            <t hangText="permission endpoint">Part of the authorization API at
+            the AM used by the requester. The endpoint at the AM at which the
+            requester asks for access permissions to be associated with its
+            requester access token.</t>
+          </list></t>
       </section>
-      
     </section>
 
     <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
 
+    <section anchor="protecting-a-resource" title="Protecting a Resource">
+      <t>Phase 1 of UMA is protecting a resource. For a host to be able to
+      delegate authorization of protected-resource access to an AM, the
+      authorizing user must first introduce the host to the AM. This phase is
+      concluded successfuly when: <list style="symbols">
+          <t>The host has received metadata about the AM, such as OAuth
+          endpoints.</t>
+
+          <t>The host has received an OAuth host access token that represents
+          the authorizing user's approval for the host to work with the AM in
+          protecting resources. This host access token is used when the host
+          makes requests at the AM's protection interface.</t>
+
+          <t>The AM has acquired information about resource sets on the host
+          it is supposed to protect on behalf of the User.</t>
+        </list></t>
+
+      <t>The user, host, and AM perform the following steps in order to
+      successfully complete Phase 1: <list style="numbers">
+          <t>The host looks up the AM's metadata and learns about its
+          protection API endpoints and supported formats.</t>
+
+          <t>If the host has not yet obtained an OAuth client identifier and
+          optional secret from the AM, it registers with the AM dynamically as
+          required, for example via the UMA dynamic registration protocol (see
+          <xref target="Dyn-Reg">Dyn-Reg</xref>).</t>
+
+          <t>The host obtains a host access token from the AM with the
+          authorizing user's consent, using either the authorization code
+          grant type or of the SAML bearer assertion grant type.</t>
+
+          <t>The host optionally registers scopes with the AM that are
+          intended to be protected (see <xref target="reg-api"></xref>).</t>
+        </list></t>
+
+      <section title="Host Looks Up AM Metadata">
+        <t>The host needs to learn the OAuth- and UMA-related endpoints of the
+        AM before they can begin interacting. The authorizing user might
+        provide the AM's location to get the host started in this process, for
+        example by typing a URL into a web form field or clicking a button.
+        Alternatively, the host might already be configured to work with a
+        single AM without requiring any user input. The exact process is
+        beyond the scope of this specification, and it is up to the host to
+        choose a method to learn the AM's location.</t>
+
+        <t>From the data provided, discovered, or configured, the host MUST
+        retrieve the hostmeta document as described in Section 2 of <xref
+        target="hostmeta">hostmeta</xref>. For example, if the user supplied
+        "am.example.com" as the Authorization Manager's domain, the host
+        creates the URL "https://am.example.com/.well-known/host-meta" and
+        performs a GET request on it.</t>
+
+        <section anchor="am-endpoints" title="AM Endpoints">
+          <t>The AM MUST provide an XRD 1.0 formatted document at the hostmeta
+          location, documenting the following: <list style="symbols">
+              <t>A set of protection API endpoints for the host to use</t>
+
+              <t>A set of authorization API endpoints for requesters to
+              use</t>
+
+              <t>At least one access token format the AM produces</t>
+
+              <t>Any claim formats the AM supports</t>
+            </list></t>
+
+          <t>(Note that the method of endpoint discovery defined here is
+          intended to be compatible with the ultimate dynamic discovery,
+          registration, and binding solution proposed by the OAuth group. The
+          UMA group has proposed a generic solution at <xref
+          target="Dyn-Reg"></xref>, with which this discovery step is
+          compatible.)</t>
+
+          <t>Property type values for access token and claim format
+          information: <list hangIndent="6" style="hanging">
+              <t
+              hangText="http://kantarainitiative.org/confluence/display/uma/token_formats"><vspace />REQUIRED
+              (one or more). Access token format produced by this AM.
+              Currently the only option is "artifact".</t>
+
+              <t
+              hangText="http://kantarainitiative.org/confluence/display/uma/claim_formats"><vspace />OPTIONAL
+              (zero or more). Claim format supported by this AM. Currently the
+              options are "openid-connect" and (ISSUE#17: any others? fill
+              in).</t>
+            </list></t>
+
+          <t>Link relationship rel values for the protection API endpoints for
+          the host to use: <list hangIndent="6" style="hanging">
+              <t
+              hangText="http://kantarainitiative.org/confluence/display/uma/host_token_uri"><vspace />REQUIRED.
+              The host access token endpoint. Available HTTP methods are as
+              defined by OAuth for a token issuance endpoint. Supplies the
+              endpoint the host should use to ask for a host access token.</t>
+
+              <t
+              hangText="http://kantarainitiative.org/confluence/display/uma/host_user_uri"><vspace />REQUIRED.
+              The host user authorization endpoint. Available HTTP methods are
+              as defined by OAuth for an end-user authorization endpoint.
+              Supplies the endpoint the host should use to gather the consent
+              of the authorizing user for a host-AM relationship if it is
+              using the authorization code grant type. The AM MUST support the
+              authorization code grant type method of obtaining the
+              authorizing user's consent. (ISSUE #28.)</t>
+
+              <t
+              hangText="http://kantarainitiative.org/confluence/display/uma/host_reg_uri"><vspace />REQUIRED.
+              The host registration endpoint. Supports the POST HTTP method,
+              accompanied by a host access token. Supplies the endpoint the
+              host should use for registering information with the AM, such as
+              descriptions of resource sets that are to be protected by this
+              AM (see <xref target="reg-api"></xref>) and permissions
+              requesters are seeking (see <xref
+              target="h-am-register-scope"></xref>). The AM SHOULD require the
+              use of a transport-layer security mechanism such as TLS when the
+              host sends requests to the host registration endpoint.</t>
+
+              <t
+              hangText="http://kantarainitiative.org/confluence/display/uma/host_token_val_uri"><vspace />OPTIONAL.
+              The host token validation endpoint. Supports the POST HTTP
+              method, accompanied by a host access token. Supplies the
+              endpoint the host should use to request validation of access
+              tokens presented to them by requesters. This endpoint SHOULD
+              require the use of a transport-layer security mechanism such as
+              TLS.</t>
+            </list></t>
+
+          <t>Link relationship rel values for the authorization API endpoints
+          for the requester to use: <list hangIndent="6" style="hanging">
+              <t
+              hangText="http://kantarainitiative.org/confluence/display/uma/req_token_uri"><vspace />REQUIRED.
+              The requester access token endpoint. Available HTTP methods are
+              as defined by <xref target="OAuth2"></xref> for a token issuance
+              URL. Supplies the token URL requesters should use to ask for an
+              access token in step 2. This endpoint SHOULD require the use of
+              a transport-layer security mechanism such as TLS.</t>
+
+              <t
+              hangText="http://kantarainitiative.org/confluence/display/uma/req_authz_uri"><vspace />
+              REQUIRED. Supplies the authroization URL requesters should use
+              to ask for authorization to grant a scope. This endpoint SHOULD
+              require the use of a transport-layer security mechanism such as
+              TLS.</t>
+            </list></t>
+        </section>
+
+        <section title="Example AM Metadata">
+          <figure>
+            <preamble>For example:</preamble>
+
+            <artwork><![CDATA[
+      
+<!-- Applies to both hosts and requesters --> 
+<Property 
+  type="http://wguma.org/confluence/display/uma/token_formats">
+  saml
+</Property>
+<Property 
+  type="http://wguma.org/confluence/display/uma/claim_formats">
+  json
+</Property>
+
+<!-- Host protection API -->
+<Link
+  rel="http://wguma.org/confluence/display/uma/host_token_uri"
+  href="https://am.example.com/host/token_uri"></Link>
+<Link
+  rel="http://wguma.org/confluence/display/uma/host_user_uri"
+  href="https://am.example.com/host/user_uri"></Link>
+<Link rel="http://kantarainitiative.org/confluence/display/uma/host_reg_uri"
+  href="https://am.example.com/host/resource_details_uri"></Link>
+<Link
+  rel="http://wguma.org/confluence/display/uma/host_token_val_uri"
+  href="https://am.example.com/host/token_validation_uri"></Link>
+
+<!-- Requester token-getting endpoints --> 
+<Link rel="http://wguma.org/confluence/display/uma/req_token_uri"
+  href="https://am.example.com/requester/token_uri"></Link> 
+<Link rel="http://wguma.org/confluence/display/uma/req_authz_uri"
+  href="https://am.example.com/requester/authz_uri"></Link>
+       ]]></artwork>
+          </figure>
+        </section>
+      </section>
+
+      <section title="Host Registers with AM">
+        <t>If the host has not already obtained a client identifier and
+        optional secret from this AM previously, in this step it MUST do so in
+        order to engage in OAuth-based interactions with the AM. This MAY be
+        done using the UMA dynamic registration protocol (see <xref
+        target="Dyn-Reg">Dyn-Reg</xref>).</t>
+      </section>
+
+      <section title="Host Obtains Host Access Token">
+        <t>In this step, the host acquires a host access token from the AM
+        that represents the approval of the authorizing user for the host to
+        trust the AM for protecting resources belonging to the user.</t>
+
+        <t>The host MUST use the <xref target="OAuth2">OAuth2</xref>
+        authorization code grant type or the SAML bearer token grant type
+        <xref target="OAuth-SAML"></xref>, utilizing the end-user
+        authorization and token endpoints as appropriate. Here the host acts
+        in the role of an OAuth client. The authorizing user acts in the role
+        of an OAuth end-user resource owner. The AM, through the provided
+        endpoint URLs, acts in the role of an OAuth authorization server.</t>
+
+        <t>The host has completed this step successfully when it possesses a
+        host access token it can use at the AM's protection API.</t>
+      </section>
+
+      <section title="Host Registers Sets of Resources to Be Protected">
+        <t>Once the host has received a host access token, for any of the
+        user's sets of resources that are to be protected by this AM, it MUST
+        register these resource sets at the AM's registration endpoint.</t>
+
+        <t>Note that the host is free to offer the option to protect any
+        subset of the user's resources using different AMs or other means
+        entirely, or to protect some resources and not others. Additionally,
+        the choice of protection regimes can be made explicitly by the user or
+        implicitly by the host. Any such partitioning by the host or user is
+        outside the scope of this specification.</t>
+
+        <section anchor="resource-reg-example"
+                 title="Example of Registering Resource Sets">
+          <t>The following example illustrates the intent and usage of
+          resource set registration.</t>
+
+          <t>This example contains some steps that are exclusively in the
+          realm of user experience rather than web protocol, to achieve
+          realistic illustration; these steps are labeled "User experience
+          only". Some other steps are exclusively internal to the operation of
+          the entity being discussed; these are labeled "Internal only".</t>
+
+          <t>An authorizing user, Alice Adams, has just uploaded a photo of
+          her new puppy to a host, Photoz.example.com, and wants to ensure
+          that this specific photo is not publicly accessible.</t>
+
+          <t>Alice has already introduced this host to her AM,
+          CopMonkey.example.com, and thus Photoz has already obtained a host
+          access token from CopMonkey. However, Alice has not previously
+          instructed Photoz to use CopMonkey to protect any other photos of
+          hers.</t>
+
+          <t>Alice has previously visited CopMonkey to map a default "do not
+          share with anyone" policy to any resource sets registered by Photoz,
+          until such time as she maps some other less-draconian policies to
+          those resources. (User experience only. This may have been done at
+          the time Alice introduced the host to the AM, and/or it could have
+          been a global or host-specific preference setting. A different
+          constraint or no constraint at all might be associated with newly
+          protected resources.) Other kinds of policies she may eventually map
+          to particular photos or albums might be "Share only with
+          husband@email.example.net" or "Share only with people in my 'family'
+          group".</t>
+
+          <t>Photoz itself has a publicly documented API that offers two dozen
+          different methods that apply to single photos, such as "addTags" and
+          "getSizes", but rolls them up into two photo-related scopes of
+          access: "viewing" (consisting of varous read-only operations) and
+          "all" (consisting of various reading, editing, and printing
+          operations). It defines two Web-accessible JSON-encoded documents
+          called scope descriptions that represent these scopes, which it is
+          able to reuse for all of its users (not just Alice). The "name"
+          parameter values are intended to be seen by Alice when she maps
+          authorization constraints to specific resource sets and actions
+          while visiting CopMonkey, such that Alice would see the strings
+          "View Photo and Related Info" and "All Actions", likely accompanied
+          by the referenced icons, in the CopMonkey interface. (Other users of
+          Photoz might similarly see the same labels at CopMonkey or whatever
+          other AM they use.)</t>
+
+          <figure>
+            <artwork><![CDATA[{
+        "scope":
+            {
+            "_id": "view"
+            "name": "View Photo and Related Info",
+            "icon_uri": "http://www.example.com/icons/reading-glasses"
+        }
+}]]></artwork>
+          </figure>
+
+          <figure>
+            <artwork><![CDATA[{
+        "scope":
+            {
+            "_id": "all"
+            "name": "All Actions",
+            "icon_uri": "http://www.example.com/icons/galaxy"
+        }
+}]]></artwork>
+          </figure>
+
+          <t>While visiting Photoz, Alice selects a link or button that
+          instructs the site to "Protect" or "Share" this single photo (user
+          experience only; Photoz could have made this a default or preference
+          setting).</t>
+
+          <t>As a result, Photoz defines for itself a resource set that
+          represents this photo (internal only; Photoz is the only application
+          that knows how to map a particular photo to a particular resource
+          set). Photoz also prepares the following resource set description,
+          which is specific to Alice and her photo. The "name" parameter value
+          is intended to be seen by Alice in mapping authorization constraints
+          to specific resource sets and actions when she visits CopMonkey,
+          such that Alice would see the string "Steve the puppy!", likely
+          accompanied by the referenced icon, in the CopMonkey interface. The
+          possible scopes of access on this resource set are indicated with
+          URI references to the action descriptions, as defined just
+          above.</t>
+
+          <figure>
+            <artwork><![CDATA[{
+        "resource_set":
+            {
+            "_id": "112210f47de98100"
+            "name": "Steve the puppy!",
+            "icon_uri": "http://www.example.com/icons/flower",
+            "scopes":
+                        ["http://photoz.example.com/dev/actions/view",
+                        "http://photoz.example.com/dev/actions/all"]
+        }
+}]]></artwork>
+          </figure>
+
+          <t>Photoz uses the "create resource set description" method of
+          CopMonkey's standard UMA-based resource registration API, presenting
+          its Alice-specific host access token there, to register and assign
+          an identifier to the resource set description. The resource set
+          identifier path component of the URL matches the "_id" parameter
+          value in the description.</t>
+
+          <figure>
+            <artwork><![CDATA[PUT /host/photoz.example.com/resource/112210f47de98100
+Content-Type: application/json
+...
+
+{
+        "resource_set":
+           {
+           "_id": "112210f47de98100"
+           "name": "Steve the puppy!",
+           "icon_uri": "http://www.example.com/icons/flower",
+           "scopes":
+                        ["http://photoz.example.com/dev/actions/view",
+                        "http://photoz.example.com/dev/actions/all"]
+         }
+}]]></artwork>
+          </figure>
+
+          <t>Once this description has been successfully registered, Photoz is
+          responsible for responding to requesters' attempts to access this
+          photo, achieving protection of the resource by "outsourcing" this
+          task to CopMonkey.</t>
+
+          <t>At the time Alice indicates she would like this photo protected,
+          Photoz can choose to redirect Alice to CopMonkey for further policy
+          setting, access auditing, and other AM-related tasks (user
+          experience only).</t>
+
+          <t>Over time, as Alice uploads other photos and creates and
+          organizes photo albums, and as Photoz makes new action functionality
+          available, Photoz can use additional methods of the resource
+          registration API to ensure that CopMonkey's understanding of Alice's
+          protected resources matches its own.</t>
+        </section>
+
+        <section anchor="action-desc" title="Scope Descriptions">
+          <t>The host defines a scope of access that is available for use with
+          resources it manages in a publicly Web-accessible document
+          containing a scope description. The scopes available for use at any
+          one host MUST have unique URI references so that the host's scope
+          descriptions are distinguishable by URI reference; the URI reference
+          MAY include a fragment identifier. Scope descriptions MAY reside
+          anywhere; the host is not required to self-host scope descriptions
+          and may wish to point to standardized scope descriptions residing
+          elsewhere.</t>
+
+          <t>A scope description is a <xref format="default"
+          target="RFC4627">JSON</xref> object with the name "scope" and with
+          the following parameters:<list style="hanging">
+              <t hangText="_id">REQUIRED. A string that uniquely identifies
+              the scope across all scopes available at this host.</t>
+
+              <t hangText="name">REQUIRED. A human-readable string describing
+              the scope of access. The AM SHOULD use the name in its user
+              interface to assist the user in setting policies for protected
+              resource sets that have this available scope.</t>
+
+              <t hangText="icon_uri">OPTIONAL. A URI for a graphic icon
+              representing the scope. If this is provided, the AM SHOULD use
+              the referenced icon in its user interface to assist the user in
+              setting policies for protected resource sets that have this
+              available scope.</t>
+            </list></t>
+
+          <figure>
+            <preamble>For example, this description characterizes a scope that
+            involves reading or viewing resources (vs. creating them or
+            editing them in some fashion):</preamble>
+
+            <artwork><![CDATA[{
+        "scope":
+            {
+            "_id": "view"
+            "name": "Read-only",
+            "icon_uri": "http://www.example.com/icons/reading-glasses"
+        }
+}]]></artwork>
+          </figure>
+
+          <t>Scope descriptions MAY contain extension parameters that are not
+          defined in this specification. The names of extension parameters
+          MUST begin with "x-" or "X-".</t>
+        </section>
+
+        <section anchor="resource-set-desc" title="Resource Set Descriptions">
+          <t>The host defines a resource set that needs protection by
+          registering a resource set description at the AM. The host registers
+          the description and manages its lifecycle at the AM's host
+          registration endpoint by using the resource registration API (see
+          <xref target="reg-api"></xref>). The resource set description is a
+          <xref format="default" target="RFC4627">JSON</xref> object with the
+          name "resource_set" and with the following parameters:<list
+              style="hanging">
+              <t hangText="_id">REQUIRED. A string that uniquely identifies
+              the resource set. The resource set identifier has meaning only
+              to the host, except insofar as the AM is able to map this
+              resource set description to a particular user by virtue of the
+              particular host access token used to access the resource
+              registration API. The host MAY use any identifier scheme to
+              represent resource sets, for example, making its identifiers
+              unique across all users of this host or allowing for the sharing
+              of resource set identifiers among users. However, for privacy
+              reasons, it is RECOMMENDED that the host assign an identifier
+              that is obscured with respect to any human-readable resource set
+              label used at this host. Further, this identifier MUST match the
+              resource set identifier path component of the URI used to manage
+              this description in the resource registration API; see <xref
+              target="reg-api"></xref> for more information. (Typically this
+              matching is achieved through automatically populating the
+              parameter value on initial registration of the description.)</t>
+
+              <t hangText="name">REQUIRED. A human-readable string describing
+              a set of one or more resources. The AM SHOULD use the name in
+              its user interface to assist the user in setting policing for
+              protecting this resource set.</t>
+
+              <t hangText="icon_uri">OPTIONAL. A URI for a graphic icon
+              representing the resource set. If provided, the AM SHOULD use
+              the referenced icon in its user interface to assist the user in
+              setting policies for protecting this resource set.</t>
+
+              <t hangText="actions">REQUIRED. An array referencing one or more
+              URIs of scope descriptions that are available for this resource
+              set.</t>
+            </list></t>
+
+          <figure>
+            <preamble>For example, this description characterizes a resource
+            set (a photo album) that can potentially be only viewed, or
+            alternatively to which full access can be granted; the URIs point
+            to scopes descriptions as defined in <xref
+            target="action-desc"></xref>:</preamble>
+
+            <artwork><![CDATA[{
+        "resource_set":
+            {
+            "_id":  "112210f47de98100",
+            "name": "Photo album",
+            "icon_uri": "http://www.example.com/icons/flower",
+            "actions":
+                        ["http://photoz.example.com/dev/actions/view",
+                        "http://photoz.example.com/dev/actions/all"]
+        }
+}]]></artwork>
+          </figure>
+
+          <t>Resource set descriptions descriptions MAY contain extension
+          parameters that are not defined in this specification. The names of
+          extension parameters MUST begin with "x-" or "X-". (ISSUE #29:
+          Extend resource set/scope descriptions with additional parameters
+          being used by the SMART team?)</t>
+
+          <t>When a host creates or updates a resource set description (see
+          <xref target="reg-api"></xref>), the AM MUST attempt to retrieve the
+          referenced action descriptions. It MAY cache such descriptions as
+          long as indicated in the HTTP header for the action description
+          resource unless the resource set description is subsequently updated
+          within the validity period. At the beginning of an authorizing
+          user's login session at the AM, the AM MUST attempt to re-retrieve
+          action descriptions applying to that user whose cached versions have
+          expired.</t>
+
+          <t>(ISSUE #33: Syntactic sugar for "implicit resource sets" where
+          there's a single API endpoint?)</t>
+        </section>
+
+        <section anchor="reg-api" title="Resource Registration API">
+          <t>The host uses a RESTful API at the AM's host registration
+          endpoint to create, read, update, and delete resource set
+          descriptions, along with listing groups of such descriptions. The
+          host MUST use its valid host access token obtained previously to
+          gain access to this endpoint.</t>
+
+          <t>Individual resource set descriptions are managed at URIs with
+          this structure:
+          "{reguri}/host/{hostid}/resource_set/{resourcesetid}"</t>
+
+          <t>The components of these URIs are defined as follows:<list
+              style="hanging">
+              <t hangText="{reguri}">The AM's host registration endpoint as
+              advertised in its metadata (see <xref
+              target="am-endpoints"></xref>).</t>
+
+              <t hangText="{hostid}">A registration area at the AM that is
+              specific to this host. The host MUST use the OAuth client
+              identifier it was assigned by this AM as its host identifier. If
+              the host identifier does not match the host access token used at
+              the host registration endpoint, the AM MUST report an HTTP 403
+              Forbidden error (see example below) and fail to act on the
+              request. (ISSUE #30: This doesn't allow "anonymous" credentials.
+              OK?)</t>
+
+              <t hangText="{resourcesetid}">An identifier for a resource set
+              description. The identifier MUST match the "_id" parameter value
+              in the description itself.</t>
+            </list></t>
+
+          <t>Without a specific resource set identifier path component, the
+          URI applies to the set of resource set descriptions already
+          registered.</t>
+
+          <t>Following is a summary of the five registration API operations
+          the AM is REQUIRED to support. Each is defined in its own section
+          below. All other methods are unsupported.<list style="symbols">
+              <t>Create resource set description: PUT
+              /host/{hostid}/resource_set/{resourcesetid}</t>
+
+              <t>Read resource set description: GET
+              /host/{hostid}/resource_set/{resourcesetid}</t>
+
+              <t>Update resource set description: PUT
+              /host/{hostid}/resource_set/{resourcesetid}</t>
+
+              <t>Delete resource set description: DELETE
+              /host/{hostid}/resource_set/{resourcesetid}</t>
+
+              <t>List resource set descriptions: GET
+              /host/{hostid}/resource_set/</t>
+            </list></t>
+
+          <t>The AM MUST respond to host requests using unsupported HTTP
+          methods with an HTTP 403 Forbidden error and MUST fail to act on the
+          request.</t>
+
+          <figure>
+            <preamble>HTTP response (unsupported method or host ID not
+            matching the presented host access token):</preamble>
+
+            <artwork><![CDATA[HTTP/1.1 403 Forbidden
+...
+
+(Body provides user-readable explanation of the error.)]]></artwork>
+          </figure>
+
+          <section anchor="create-resource-set"
+                   title="Create Resource Set Description">
+            <t>Adds a new resource set description using the PUT method,
+            thereby putting it under the AM's protection. The host assigns a
+            unique identifier to the action. The host is free to use its own
+            methods of identifying and describing resource sets; the AM MUST
+            treat them as opaque for the purpose of authorizing access, other
+            than associating them with the authorizing user represented by the
+            host access token used to access the API. On successfully
+            registering a resource set, the host MUST use UMA mechanisms to
+            limit access to any resources corresponding to this resource set.
+            (ISSUE #31: Should the response contain a replay of the
+            description just registered? See, for example, how SCIM
+            works.)</t>
+
+            <figure>
+              <preamble>HTTP request:</preamble>
+
+              <artwork><![CDATA[PUT /host/{hostid}/resource/{resourceid}
+Content-Type: application/json
+...
+
+(Body contains JSON representation of resource set description to be created.)]]></artwork>
+            </figure>
+
+            <figure>
+              <preamble>HTTP response (success):</preamble>
+
+              <artwork><![CDATA[HTTP/1.1 201 Created
+Content-Type: application/json
+Location: (URL of the created resource, same as that which was PUT.)
+...]]></artwork>
+            </figure>
+          </section>
+
+          <section anchor="read-resource-set"
+                   title="Read Resource Set Description">
+            <t>Reads a previously registered resource set description using
+            the GET method.</t>
+
+            <figure>
+              <preamble>HTTP request:</preamble>
+
+              <artwork><![CDATA[GET /host/{hostid}/resource/{resourceid} HTTP/1.1
+...]]></artwork>
+            </figure>
+
+            <figure>
+              <preamble>HTTP response (success):</preamble>
+
+              <artwork><![CDATA[HTTP/1.1 200 OK
+Content-Type: application/json
+ETag: (entity tag of the resource artifact)
+...
+
+(Body contains JSON representation of the resource set description.)]]></artwork>
+            </figure>
+
+            <figure>
+              <preamble>HTTP response (not found):</preamble>
+
+              <artwork><![CDATA[HTTP/1.1 404 Not Found
+...
+
+(Body provides user-readable explanation of the error.)]]></artwork>
+            </figure>
+          </section>
+
+          <section anchor="update-resource-set"
+                   title="Update Resource Set Description">
+            <t>Updates a previously registered resource set description using
+            the PUT method, thereby changing the resource set's protection
+            characteristics.</t>
+
+            <t>This API is different from the create new resource set
+            description (<xref target="create-resource-set"></xref>) because
+            it assumes that prior registration of the resource has
+            occured.</t>
+
+            <t>(ISSUE#27: Can Update Resource Set Description API mistakenly
+            overwrite/destroy an existing resource description? Also see ISSUE
+            #31: Should the response replay the just-registered
+            description?)</t>
+
+            <figure>
+              <preamble>HTTP request:</preamble>
+
+              <artwork><![CDATA[PUT /host/{hostid}/resource/{resourceid}
+Content-Type: application/json
+If-Match: (entity tag of the resource if operation is to be idempotent)
+...
+
+(Body contains JSON representation of resource set description to be updated.)]]></artwork>
+            </figure>
+
+            <figure>
+              <preamble>HTTP response (success):</preamble>
+
+              <artwork><![CDATA[HTTP/1.1 204 No Content
+...]]></artwork>
+            </figure>
+
+            <figure>
+              <preamble>HTTP response (entity tag does not match):</preamble>
+
+              <artwork><![CDATA[HTTP/1.1 412 Precondition failed
+...]]></artwork>
+            </figure>
+          </section>
+
+          <section anchor="delete-resource-set"
+                   title="Delete Resource Set Description">
+            <t>Deletes a previously registered resource set description using
+            the DELETE method, thereby removing it from the AM's protection
+            regime.</t>
+
+            <figure>
+              <preamble>HTTP request:</preamble>
+
+              <artwork><![CDATA[DELETE /host/{hostid}/resource/{resourceid}
+If-Match: (entity tag of the resource if operation to be idempotent)
+...]]></artwork>
+            </figure>
+
+            <figure>
+              <preamble>HTTP response (success):</preamble>
+
+              <artwork><![CDATA[HTTP/1.1 204 No content
+...]]></artwork>
+            </figure>
+
+            <figure>
+              <preamble>HTTP response (not found):</preamble>
+
+              <artwork><![CDATA[HTTP/1.1 404 Not Found
+...
+
+(Body provides user-readable explanation of the error.)]]></artwork>
+            </figure>
+
+            <figure>
+              <preamble>HTTP response (entity tag does not match):</preamble>
+
+              <artwork><![CDATA[HTTP/1.1 412 Precondition failed
+...]]></artwork>
+            </figure>
+          </section>
+
+          <section anchor="list-resource-sets"
+                   title="List Resource Set Descriptions">
+            <t>Lists all previously registered resource set identifiers for
+            this user using the GET method. The list is in the form of a JSON
+            array of {resourcesetid} values.</t>
+
+            <figure>
+              <preamble>HTTP request:</preamble>
+
+              <artwork><![CDATA[GET /host/{hostid}/resource_set/
+...]]></artwork>
+            </figure>
+
+            <figure>
+              <preamble>HTTP response:</preamble>
+
+              <artwork><![CDATA[HTTP/1.1 200 OK
+Content-Type: application/json
+...
+
+(Body contains JSON array of {resourcesetid} values.)]]></artwork>
+            </figure>
+          </section>
+        </section>
+      </section>
+    </section>
+
     <section anchor="getting-authz-accessing-resource"
              title="Getting Authorization and Accessing a Resource">
-      <t>The main purpose of UMA is to orchestrate and control requesting
+      <t>Phase 2 of UMA is getting authorization, and Phase 3 is accessing a
+      resource. In these phases, an AM orchestrates and controls requesting
       parties' access to a user's protected resources at a host, under
-      conditions dictated by that user. Thus, the core interaction in UMA
-      involves a requester approaching a host and attempting the kind of
-      access to a resource there that it seeks.</t>
+      conditions dictated by that user.</t>
 
-      <t>Five pairwise interactions characterize the authorization and access
-      process. The main interaction is between a requester and host, at the
-      host's protected resource endpoint. The host responds to the requester's
-      access request in one of several ways depending on the circumstances of
-      the request, either immediately or having first performed one or more
-      embedded interactions with the AM. Depending on the nature of the host's
-      response to an failed access attempt, the requester itself engages in
-      embedded interactions with the AM before re-attempting access. The
-      pairwise interactions can be summarized as follows:<list style="numbers">
-          <t>Requester-host: Attempt access at protected resource. 
-            The host's response, and usage of other embedded
-          interactions, varies depending on whether the requester presents a
-          token, whether the token is valid, and whether the token is
-          associated with a scope that allows for the type of access
-          sought.</t>
+      <t>A series of pairwise interactions characterize this entire
+      authorization and access process. Phase 2 always begins with the
+      requester attempting access at a protected resource endpoint at the
+      host. How the requester came to learn about this endpoint is out of
+      scope for UMA; the authorizing user might, for example, have advertised
+      its availability publicly on a blog or other website, listed it in a
+      discovery service, or emailed a link to a particular intended requesting
+      party.</t>
 
-          <t>Requester-AM: Request an access token. Precondition:<list
+      <t>The host responds to the requester's access request in one of several
+      ways depending on the circumstances of the request, either immediately
+      or having first performed one or more embedded interactions with the AM.
+      Depending on the nature of the host's response to an failed access
+      attempt, the requester itself engages in embedded interactions with the
+      AM before re-attempting access.</t>
+
+      <t>Phase 3 is merely the successful completion of a requester's access
+      attempt (see <xref target="sufficient-scope"></xref>) that initially
+      involved several embedded interactions among the requester, AM, and host
+      in Phase 2.</t>
+
+      <t>The interactions can be summarized as follows. The interaction
+      summarized in each top-level list item MAY stop at the end of that time,
+      if the requester chooses not to continue pursuing access to the
+      resource.<list style="symbols">
+          <t>The requester attempts access at a particular protected resource
+          at a host (see <xref target="r-h-attempt-access"></xref>).<list
               style="symbols">
-              <t>The host informed the requester which AM to get an access
-              token from in its interaction #1 response.</t>
+              <t>If the user corresponding to the protected resource URI is
+              ambiguous: host responds immediately with an error (see <xref
+              target="ambiguous-user"></xref>).</t>
+
+              <t>If the user is unambiguous but the access attempt is
+              unaccompanied by a requester access token: host responds
+              immediately with instructions on where to go to obtain one (see
+              <xref target="no-token"></xref>).</t>
             </list></t>
 
-          <t>Host-AM: Validate requester's presented access token.
-          Precondition:<list style="symbols">
-              <t>The requester presented an access token in its interaction 1
-              request.</t>
+          <t>If the access attempt was accompanied by a requester access
+          token, the host validates the token at the AM (see <xref
+          target="h-am-token-validation"></xref>).<list style="symbols">
+              <t>If the AM reports that the requester access token is invalid
+              (see <xref target="token-invalid"></xref>), the host responds
+              with instructions on where to go to obtain a token (see <xref
+              target="no-token"></xref>).</t>
             </list></t>
 
-          <t>Host-AM: Register a requested scope on the requester's behalf.
-          Preconditions:<list style="symbols">
-              <t>The requester presented a valid access token its interaction
-              #1 request.</t>
+          <t>If the AM reports that the requester access token is valid (see
+          <xref target="token-valid"></xref>) but none of the permissions
+          associated with the token don't match the scope of attempted access,
+          the host registers a suitable permission on the requester's behalf
+          at the AM (see <xref target="h-am-register-scope"></xref>) and then
+          responds to the requester with instructions on where to go to
+          request authorization to associate that permission with its token
+          (see <xref target="insufficient-scope"></xref>).</t>
 
-              <t>The token status returned did not include a currently
-              authorized scope that covers the type of access attempted.</t>
-            </list></t>
+          <t>If the requester received instructions on where to go to get a
+          token, it requests a token from the appropriate AM (see <xref
+          target="r-am-obtain-token"></xref>).</t>
 
-          <t>Requester-AM: Request authorization for scoped access. The
-          requester may need to provide claims to prove suitability for
-          authorization. Preconditions:<list style="symbols">
-              <t>The host registered a scope with the AM on the requester's
-              behalf in interaction #4.</t>
+          <t>If the requester received instructions on where to go to get
+          authorization for access permission, it requests permission from the
+          appropriate AM (see <xref target="r-am-authz-scope"></xref>).</t>
 
-              <t>The host gave the requester a requested-scope ticket in its
-              interaction #1 response.</t>
-            </list></t>
+          <t>If the AM reported that the requester access token is valid, and
+          at least one of the permissions associated with the token match the
+          scope of attempted access, the host responds to the requester's
+          access attempt with success (see <xref
+          target="sufficient-scope"></xref>).</t>
         </list></t>
 
       <t>This process extends OAuth in several notable ways:<list
           style="symbols">
-          <t>The requester's access token issued in interaction #2, in the
-          absence of interaction #5, signifies only a binding of this
+          <t>The requester access token signifies only a binding of this
           requester, the requesting party on whose behalf it is acting, this
-          host, and this AM, to be reused for all resources and all scopes of
-          access that might be sought at this host protected by this AM.</t>
+          host, this authorizing user, and this AM, to be reused for all
+          permissions to access any of the user's protected resources at this
+          host that are protected by this AM.</t>
 
-          <t>Any authorizing-user consent required by policy is gathered in
-          interaction #5, rather than at the time of token issuance.</t>
+          <t>Any real-time authorizing user (resource owner) consent required
+          by policy is gathered at the time of claim requests, rather than at
+          the time of token issuance; the flow does not distinguish between
+          policies for "person-to-person" sharing and policies for
+          "person-to-self" sharing.</t>
 
           <t>The process of seeking authorization does not just rely on the
           requester's ability to authenticate as the (or a) resource owner,
@@ -386,7 +1172,7 @@
         <t>This interaction assumes that the host has previously registered
         with an AM one or more resource sets that correspond to the resource
         to which access is being attempted, such that the host considers this
-        resource to be protected.</t>
+        resource to be protected by a particular AM.</t>
 
         <t>The requester is typically attempts to access the desired resource
         at the host directly (for example, when a human operator of the
@@ -400,17 +1186,18 @@
 
         <t>The host responds in one of five ways.</t>
 
-        <section title="Requester's request is ambiguous">
+        <section anchor="ambiguous-user"
+                 title="Requester's Request Is Ambiguous">
           <t>By the nature of the requester's request for access (for example,
-          through a URL parameter specifying a username or other identifier),
+          through a URI parameter specifying a username or other identifier),
           the host needs to be able to detect uniquely which one of its users
           has the operative control over access to this resource. Without
           this, the host will be unable to interact with the correct AM using
           the correct host access token in protecting the resource.</t>
 
           <t>If the requester's request is ambiguous with respect to the
-          specific user at the host, the host responds with an "ambiguous-user
-          error" message.</t>
+          specific user at the host, the host rimmediately esponds with an
+          "ambiguous-user error" message.</t>
 
           <figure>
             <preamble>For example:</preamble>
@@ -419,19 +1206,22 @@
           </figure>
         </section>
 
-        <section title="Requester presents no access token">
-          <t>If the requester does not present any access token with the
-          request, the host MUST return an HTTP 400 status code indicating it
-          is an "invalid_request" [REF: Section 2.4.1 of OAuth Bearer Token
-          draft]. This indicates to the requester one of the following: that
-          the request is missing a required parameter, that it includes an
-          unsupported parameter or parameter value, that it repeats the same
-          parameter, that it uses more than one method for including an access
-          token, or that it is otherwise malformed.</t>
+        <section anchor="no-token" title="Requester Presents No Access Token">
+          <t>If the host is able to detect uniquely which one of its users has
+          the operative control over access to the resource (see <xref
+          target="ambiguous-user"></xref>), but the requester does not present
+          any access token with the request, the host MUST return an HTTP 400
+          status code indicating it is an "invalid_request" [REF: Section
+          2.4.1 of OAuth Bearer Token draft]. This indicates to the requester
+          one of the following: that the request is missing a required
+          parameter, that it includes an unsupported parameter or parameter
+          value, that it repeats the same parameter, that it uses more than
+          one method for including an access token, or that it is otherwise
+          malformed.</t>
 
-          <t>(ISSUE#11: Refer to OAuth processes for getting a token
-          "autonomously" here? Currently there is no section for the
-          requester-AM token-getting interaction.)</t>
+          <t>(ISSUE #32: Need more detail here? It needs to convey the AM
+          hostmeta endpoint so that the requester can discover the right token
+          endpoint to use. Does OAuth do this automatically?)</t>
 
           <figure>
             <preamble>For example:</preamble>
@@ -440,7 +1230,7 @@
           </figure>
         </section>
 
-        <section title="Requester presents an invalid access token">
+        <section title="Requester Presents an Invalid Access Token">
           <t>If the requester presents an access token with its request, the
           host engages in a token validation interaction with the AM to test
           its validity (see <xref target="h-am-token-validation"></xref>). If
@@ -450,9 +1240,9 @@
           requester that the access token provided is expired, revoked,
           malformed, or invalid for other reasons.</t>
 
-          <t>(ISSUE#11 : Refer to OAuth processes for getting a token
-          "autonomously" here? Currently there is no section for the
-          requester-AM token-getting interaction.)</t>
+          <t>(ISSUE #32: Need more detail here, as above? It needs to convey
+          the AM hostmeta endpoint so that the requester can discover the
+          right token endpoint to use. Does OAuth do this automatically?)</t>
 
           <figure>
             <preamble>For example:</preamble>
@@ -462,20 +1252,20 @@
         </section>
 
         <section anchor="insufficient-scope"
-                 title="Requester's token has insufficient scope">
+                 title="Requester's Token Has Insufficient Permission">
           <t>If the requester presents an access token with its request, the
           host engages in a token validation interaction with the AM to test
           its validity (see <xref target="h-am-token-validation"></xref>). If
           the AM reports that the requester's access token is valid, the host
           examines the returned token status. If the token status does not, in
-          the host's judgment, contain a scope that applies to the type of
-          access attempted by the requester, the Host SHOULD engage in a
-          requested-scope registration interaction with the AM (see <xref
-          target="h-am-register-scope"></xref>) and respond with the HTTP 403
-          (Forbidden) status code indicating that the token has
-          "insufficient_scope" [REF: Section 2.4.1 of Oauth Bearer Token
-          draft], along with providing the ticket corresponding to the
-          just-registered scope.</t>
+          the host's judgment, contain any permission that applies to the
+          scope of access attempted by the requester, the Host SHOULD register
+          the desired permission with the AM (see <xref
+          target="h-am-register-scope"></xref>) and then respond to the
+          requester with the HTTP 403 (Forbidden) status code indicating that
+          the token has "insufficient_scope" [REF: Section 2.4.1 of Oauth
+          Bearer Token draft], along with providing the permission ticket it
+          just received from the AM.</t>
 
           <figure>
             <preamble>For example:</preamble>
@@ -484,67 +1274,60 @@
           </figure>
         </section>
 
-        <section title="Requester's token has sufficient scope">
+        <section anchor="sufficient-scope"
+                 title="Requester's Token Has Sufficient Permission">
           <t>If the requester presents an access token with its request, the
           host engages in a token validation interaction with the AM to test
           its validity (see <xref target="h-am-token-validation"></xref>). If
           the AM reports that the requester's access token is valid, the host
           examines the returned token status. If the token status, in the
-          host's judgment, contains at least one scope that applies to the
-          type of access attempted by the requester, the host gives access to
-          the desired resource.</t>
+          host's judgment, contains at least one permission that applies to
+          the scope of access attempted by the requester, the host gives
+          access to the desired resource.</t>
 
           <figure>
             <preamble>For example:</preamble>
 
             <artwork><![CDATA[TBS]]></artwork>
           </figure>
+
+          <t>This response constitutes the conclusion of Phase 3 of UMA.</t>
         </section>
       </section>
 
-
       <section anchor="r-am-obtain-token"
-        title="Requester-AM: Requester Obtains Access Token">
-        
-        <t>When a requester is not in posession of a suitable access token
-        to access resources at a host, it requests one from the AM.</t>
-        
-        <t>When possible the requester SHOULD use the the OAuth2.0
-        client credentials flow which is defined in the
-        OAuth2.0 specification (Section 4.4 of <xref target="OAuth2"></xref>).
-        </t>
-        
-        <t>As mentioned before, the UMA process for the requester obtaining
-          an access token expands upon the basic OAuth2.0 process for
-          getting a token.
-          In particular,
-          in the absence of an access token with the correct scope
-          (eg. obtained by the requester from the AM by
-          it asking the AM for authorization for scoped access
-          in  <xref target="r-am-authz-scope"></xref>),
-          the access token issued in the current interaction
-          signifies only a binding of this current requester
-          with the given host and the given AM instance.
-          The expectation is that the token to be reused 
-          for all resources and all scopes of
-          access that might be sought at this host protected by this AM.
-        </t>
-        
+               title="Requester-AM: Requester Obtains Access Token">
+        <t>When a requester does not possess a valid access token to access
+        resources of a particular user at a particular host, it requests one
+        from the AM. Each such token is unique per requester; requesting party
+        on whose behalf the requester software is operating; authorizing user;
+        AM; and host. It is not unique per protected resource or resource set;
+        the token represents the set of permissions for that requesting party
+        to access potentially a large set of different resource sets with a
+        variety of scopes.</t>
+
+        <t>When possible, the requester SHOULD use the the OAuth2.0 client
+        credentials authorization grant type (see Section 4.4 of <xref
+        target="OAuth2"></xref>).</t>
+
+        <t>In UMA, unlike in plain OAuth, obtaining an access token does not
+        automatically convey permission for access to any protected resource.
+        The token must first be associated with at least one suitable
+        permission for scoped access in order for the requester to succeed in
+        accessing the resource.</t>
+
         <t>In the case where the requester does not yet have a unique
-        credential and where the AM demands such a unique credential,
-        it is recommended that the requester use the 
-        dynamic registration protocol
-        (see <xref target="Dyn-Reg">Dyn-Reg</xref>).
-          The dynamic registration protocol allows the AM
-          to provide the requester with a unique client identifier and
-          optionally a client secret in a dynamic fashion. 
-        </t>        
+        credential and where the AM demands such a unique credential, the
+        requester MAY use the dynamic registration protocol (see <xref
+        target="Dyn-Reg"></xref>), if the AM supports or requires it. The
+        dynamic registration protocol allows the AM to provide the requester
+        with a unique client identifier and optionally a client secret in a
+        dynamic fashion.</t>
       </section>
-        
-        
+
       <section anchor="h-am-token-validation"
                title="Host-AM: Validate Requester's Presented Access Token">
-        <t>On receiving a requester's access token in an access attempt, the
+        <t>On receiving a requester access token in an access attempt, the
         host asks the AM to validate this token. It gains authorized access to
         the AM's token validation endpoint by presenting its own host access
         token in the request to validate the requester's access token. The
@@ -563,8 +1346,8 @@
         request.</t>
 
         <figure>
-          <preamble>Example of a request to the token validation endpoint
-          that provides the host access token in the header:</preamble>
+          <preamble>Example of a request to the token validation endpoint that
+          provides the host access token in the header:</preamble>
 
           <artwork><![CDATA[
 POST /token_validation HTTP/1.1
@@ -576,10 +1359,11 @@ token=sbjsbhs(/SSJHBSUSSJHVhjsgvhsgvshgsv&ipaddr=192.168.1.1
        ]]></artwork>
         </figure>
 
-        <section title="AM returns a token invalid response">
+        <section anchor="token-invalid"
+                 title="AM Returns a Token Invalid Response">
           <t>If the the AM finds the requester's access token to be invalid,
-          it returns an UMA error message (ISSUE#12: correct? HTTP success?) to
-          indicate that the requester's token is invalid.</t>
+          it returns an UMA error message (ISSUE#12: correct? HTTP success?)
+          to indicate that the requester's token is invalid.</t>
 
           <figure>
             <preamble>For example:</preamble>
@@ -588,18 +1372,20 @@ token=sbjsbhs(/SSJHBSUSSJHVhjsgvhsgvshgsv&ipaddr=192.168.1.1
           </figure>
         </section>
 
-        <section title="AM returns a token valid response">
+        <section anchor="token-valid"
+                 title="AM Returns a Token Valid Response">
           <t>If the the AM finds the requester's access token to be valid, it
           returns an UMA success message (with HTTP success) which supplies
-          the token status in an HTTP response using the 200 OK status code
-          and containing a JSON document supplying the token status. The token
-          status supplies all of the granted scopes and associated resource
-          sets that are currently valid for this requester access token (and
-          thus for the requesting party on whose behalf it is acting).</t>
+          the token status in an HTTP response using the 200 OK status code,
+          containing a JSON <xref target="RFC4627"></xref> document supplying
+          the token status description. The token status supplies all of the
+          permissions that are currently valid for this requester access token
+          (and thus for the requesting party on whose behalf it is
+          acting).</t>
 
-          <t>The token status is an object with the name "token_status"
-          containing an array of objects with the following parameters:<list
-              style="hanging">
+          <t>The token status description is a JSON object with the name
+          "token_status" containing an array of permission objects, each with
+          the following parameters:<list style="hanging">
               <t hangText="_id">REQUIRED. A string that uniquely identifies
               the resource set, access to which has been granted to this
               requester on behalf of this requesting party. The identifier
@@ -607,15 +1393,14 @@ token=sbjsbhs(/SSJHBSUSSJHVhjsgvhsgvshgsv&ipaddr=192.168.1.1
               as protected.</t>
 
               <t hangText="scopes">REQUIRED. An array referencing one or more
-              identifiers of scopes to which access was granted for this
-              resource set. Each scope identifier MUST correspond to a scope
-              that was registered by this host for the referenced resource
-              set.</t>
+              URIs of scopes to which access was granted for this resource
+              set. Each scope MUST correspond to a scope that was registered
+              by this host for the referenced resource set.</t>
 
               <t hangText="exp">REQUIRED.An integer representing the
-              expiration time on or after which the scope MUST NOT be accepted
-              for authorized access. The processing of the exp parameter
-              requires that the current date/time MUST be before the
+              expiration time on or after which the permission MUST NOT be
+              accepted for authorized access. The processing of the exp
+              parameter requires that the current date/time MUST be before the
               expiration date/time listed in the exp claim. Host implementers
               MAY provide for some small leeway, usually no more than a few
               minutes, to account for clock skew.</t>
@@ -643,31 +1428,31 @@ Cache-Control: no-store
 }    ]]></artwork>
           </figure>
 
-          <t>The host MUST validate if one of the scopes is sufficient for
-          requester to access the requested resource in the manner originally
-          attempted. If it is, the host gives access in that manner.</t>
+          <t>(ISSUE #33: Syntactic sugar for "implicit resource sets" where
+          there's a single API endpoint?)</t>
         </section>
       </section>
 
       <section anchor="h-am-register-scope"
-               title="Host-AM: Register a Requested Scope">
-        <t>If, in the host's judgment, the granted scopes returned by the AM
-        from a token validation request are not sufficient for this
-        requester's authorized access to the resource, the host registers a
-        requested scope with the AM that it believes would be sufficient for
-        the type of access sought. The AM returns a requested-scope ticket for
-        the host to give to the requester in its response to attempted access
-        (see <xref target="insufficient-scope"></xref>).</t>
+               title="Host-AM: Register a Permission">
+        <t>If, in the host's judgment, the permissions returned by the AM from
+        a token validation request are insufficient to allow this requester's
+        access attempt, the host registers a permission with the AM that it
+        believes would be sufficient for the type of access sought. The AM
+        returns a permission ticket for the host to give to the requester in
+        its response (see <xref target="insufficient-scope"></xref>).</t>
 
-        <t>The host registers the requested scope using the POST method at the
-        AM's registration endpoint, providing its host access token to get
+        <t>The host registers the permission using the POST method at the AM's
+        registration endpoint, providing its host access token to get
         authorized access to this endpoint. The body of the HTTP request
-        message contains a JSON document providing the requester's access
-        token and the requested scope. (ISSUE#13: How to structure the body to
-        include the scope and also the requester's access token?)</t>
+        message contains a JSON <xref target="RFC4627"></xref> document
+        providing the requester's access token and the requested permission.
+        (ISSUE#13: How to structure the body to include the permission and
+        also the requester access token?)</t>
 
-        <t>The requested scope is an object with the name "requested_scope"
-        and the following parameters:<list style="hanging">
+        <t>The requested scope is an object with the name
+        "requested_permission" and the following parameters:<list
+            style="hanging">
             <t hangText="_id">REQUIRED. A string that uniquely identifies a
             resource set, access to which this requester is seeking access.
             The identifier MUST correspond to a resource set that was
@@ -697,62 +1482,63 @@ Cache-Control: no-store
       </section>
 
       <section anchor="r-am-authz-scope"
-               title="Requester-AM: Request Authorization for Scoped Access">
-        <t>In this interaction the requester asks the AM to grant
-        authorization to add a scope to its access token for use at a
+               title="Requester-AM: Request Authorization for Scoped Permission">
+        <t>In this interaction, the requester asks the AM to grant
+        authorization to add a permission to its access token for use at a
         particular host. It does this at the AM's authorization endpoint by
-        supplying the ticket it got from the host that corresponds to the
-        desired scope, along with its requester access token. The AM is able
-        to use this information to look up the registered requested scope,
-        confirm that the correct requester is requesting the scope, mapping
-        the requested scope to operative user policies, and demand in turn
-        that the requester convey claims to support its request as
-        necessary.</t>
+        supplying the permission ticket it got from the host, along with its
+        requester access token. The AM uses this information to look up the
+        previously registered permission, confirm that the correct requester
+        is asking for it, map the requested permission to operative user
+        policies, and demand in turn that the requester convey any claims
+        needed to support its request.</t>
 
-        <t>The Requester performs a GET on the access token URL, using the
-        standard HTTP "Accept" header to express the acceptable media type(s)
-        of any claims-required list. (ISSUE#14: Need to unify the request for
-        authorization with the providing of claims, so that this can be a
-        single request-response pattern that can loop as required.)</t>
+        <t>The requester performs a GET on the authorization endpoint, using
+        the standard HTTP "Accept" header to express the acceptable media
+        type(s) of any claims-requested response. (ISSUE#14: Need to unify the
+        request for authorization with the providing of claims, so that this
+        can be a single request-response pattern that can loop as required.
+        Should it always be a POST therefore?)</t>
 
         <t>The AM responds in one of three ways: <list style="symbols">
-            <t>If the AM requires no claims from the Requester in order to
-            grant authorization based on user policy, it gives success
-            response, indicating that the requested scope has been associated
-            with the requester's token.</t>
+            <t>If the AM requires no claims (or no further claims) from the
+            requester in order to grant authorization for the asked-for
+            permission based on user policy, it gives a success response,
+            indicating that the requested scope has been associated with the
+            requester's token.</t>
 
-            <t>If the Requester is definitively not authorized according to
-            user policy, the AM responds with a failure response and the
-            authorization request phase ends.</t>
+            <t>If the requester is definitively not authorized for this
+            permission according to user policy, the AM responds with a
+            failure response and the authorization request phase ends.</t>
 
             <t>If user policy demands more information from the requester, the
-            AM responds with a claims-required response containing a
-            claims-required list. The list SHOULD use the media type that was
-            indicated by the requester as acceptable.</t>
+            AM responds with a claims-requested response. The list SHOULD use
+            the claim format media type that was indicated by the requester as
+            acceptable.</t>
           </list></t>
 
-        <t>Note that the claims-required list from the AM
-          may provide a choice of the sets of claims to be satisfied.
-          This allows the requester to select one set of claims
-          which it can readily satisfy in order to obtained the needed
-          scoped access.</t>
-        
-          <t>Once the Requester completes preparing the claims document, it performs a POST
-        of that document to the authorization negotiation URL, specifying its
-        type in the "Content-Type" header.</t>
+        <t>The claims-requested list MAY contain internal logic that gives a
+        choice or other variability around the sets of claims that will
+        satisfy the request. This potentially allows the requester to select a
+        subset of claims to supply in order to obtain the needed
+        permission.</t>
+
+        <t>The requester re-POSTs the authorization request, providing any
+        claims it has chosen to supply to satisfy the request for claims. f
+        the AM accepts the claims document submitted by the requester, the AM
+        responds with a successful or unsuccessful access token response, or
+        with another claims-required response. This loop can be run through as
+        many times as necessary for the AM to request further claims and the
+        requester to supply them, re-asking for authorization to get the
+        needed permission at every juncture.</t>
 
         <t>If the content-type is not recognized by the AM, the AM will reject
-         the document. 
-         (ISSUE#15: If the content-type (of the claims response document)
-         is not recognized by the AM, what happens then? 
-         Should be an error from the AM.)</t>
+        the document. (ISSUE#15: If the content-type (of the claims response
+        document) is not recognized by the AM, what happens then? Should be an
+        error from the AM.)</t>
 
-        <t>If the AM accepts the claims document submitted by the requester,
-        the AM responds with a successful or unsuccessful access token
-        response, or with another claims-required response. 
-        (ISSUE#16: Eventually need some special claim types that 
-        allow for the trusted-claims model
-        to unfold.)</t>
+        <t>(ISSUE#16: Eventually need some special claim types that allow for
+        the trusted-claims model to unfold.)</t>
 
         <t>This specification does not define the formats of required-claims
         lists and claims documents. It may ultimately put minimum conformance
@@ -761,750 +1547,49 @@ Cache-Control: no-store
         that claim formats seeking consideration for use in UMA must meet. One
         candidate specification for lightweight claims requests and responses
         is <xref target="Claims2.0">Claims2.0</xref>.</t>
+
+        <section anchor="trusted-claims" title="Trusted Claims">
+          <t>(ISSUE#16: Eventually need some special claim types that allow
+          for the trusted-claims model to unfold.)</t>
+
+          <t>This specification will refer to OpenID Connect emerging protocol
+          as mechanism to support claims-based access control to enable
+          specific UMA use cases in which the access control decision to grant
+          access to Authorizing User's resource is made based on Requesting
+          Party information, such as Subject's name, age, email address, role,
+          location, etc.</t>
+
+          <t>OpenID Connect provides authentication, authorization, and
+          attribute transmission capability. The integration approach uses
+          OpenID Connect protocol to request Requesting Party&rsquo;s claims,
+          leveraging OpenID Connect mechanisms to transmit attributes from
+          distributed sources.</t>
+
+          <t>The interoperability scenario is based on two AM's
+          interfaces:</t>
+
+          <t>- OpenID 2.0 Relying Party</t>
+
+          <t>- Claims Client for OpenID Connect OpenID 2.0</t>
+
+          <t>Relying Party interface is responsible to authenticate the
+          Requesting Party and initialize the OpenID Connect protocol. Claims
+          Client interface is responsible to request claims based on OpenID
+          Connect protocol, in order to satisfy claim-based policy. The Client
+          interacts with the OpenID Connect's Authorization Server to obtain
+          specific access token to access to the Requesting Party&rsquo;s
+          UserInfo EndPoint (trusted claims provider).</t>
+        </section>
       </section>
     </section>
-
-    <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
-
-    <section anchor="protecting-a-resource" title="Protecting a Resource">
-      <t>In order for a host to be able to delegate authorization to an AM,
-      the authorizing sser must introduce the host to the AM. A successful
-      conclusion of this phase is denoted by the following results: <list
-          style="symbols">
-          <t>The host has received metadata about the AM, such as OAuth
-          endpoints.</t>
-
-          <t>The host has received an OAuth access token (known as the host
-          access token) that represents the authorizing user's approval for
-          the host to work with a given AM in protecting resources. This host
-          access token is used when the host makes requests at the AM's
-          protection API.</t>
-
-          <t>The AM has acquired information about resource sets on the host
-          it is supposed to protect on behalf of the User.</t>
-        </list></t>
-
-      <t>The following steps are performed by the user, host, and AM in order
-      to successfully complete the first phase: <list style="numbers">
-          <t>The host looks up the AM's metadata and learns about its API
-          endpoints and supported formats.</t>
-
-          <t>If the host has not yet obtained an OAuth client identifier and
-          optional secret from the AM, it registers with the AM dynamically,
-          for example via the UMA dynamic registration protocol (see <xref
-          target="Dyn-Reg">Dyn-Reg</xref>).</t>
-
-          <t>The host obtains a host access token from the AM with the
-          authorizing user's consent, by following the OAuth 2.0 authorization
-          code or SAML bearer token profile.</t>
-
-          <t>The host optionally registers scopes with the AM that are
-          intended to be protected (see <xref target="reg-api"></xref>).</t>
-        </list></t>
-
-      <section title="Host Looks Up AM Metadata">
-        <t>The host needs to learn the OAuth- and UMA-related endpoints of the
-        AM before they can begin interacting. The authorizing user might
-        provide the AM's location to get the Host started in this process, for
-        example by typing a URL into a web form field or clicking a button.
-        Alternatively, the host might already be configured to work with a
-        single AM without requiring any user input. The exact process is
-        beyond the scope of this specification, and it is up to the host to
-        choose a method to learn the AM's location.</t>
-
-        <t>From the data provided, discovered, or configured, the host MUST
-        retrieve the hostmeta document as described in Section 2 of <xref
-        target="hostmeta">hostmeta</xref>. For example, if the user supplied
-        "am.example.com" as the Authorization Manager's domain, the host
-        creates the URL "https://am.example.com/.well-known/host-meta" and
-        performs a GET request on it.</t>
-
-        <section title="AM Endpoints">
-          <t>The AM MUST provide a XRD 1.0 formatted document at the hostmeta
-          location, documenting the following: <list style="symbols">
-              <t>A set of OAuth 2.0 end-user authorization and token endpoints
-              for the host to use</t>
-
-              <t>A set of OAuth 2.0 end-user authorization and token endpoints
-              for requesters to use</t>
-
-              <t>A set of UMA protection API endpoints for the host to use</t>
-
-              <t>At least one access token format the AM produces</t>
-
-              <t>Any claims formats the AM supports</t>
-            </list></t>
-
-          <t>(Note that the method of endpoint discovery defined here is
-          intended to be compatible with the ultimate dynamic discovery,
-          registration, and binding solution proposed by the OAuth group. The
-          UMA group has proposed a generic solution at <xref
-          target="Dyn-Reg">Dyn-Reg</xref>, with which this discovery step is
-          compatible.)</t>
-
-          <t>Property type values for access token and claim format
-          information: <list hangIndent="6" style="hanging">
-              <t
-              hangText="http://kantarainitiative.org/confluence/display/uma/token_formats"><vspace />
-              REQUIRED (one or more). Access token format produced by this AM.
-              Currently the only option is "artifact".</t>
-
-              <t
-              hangText="http://kantarainitiative.org/confluence/display/uma/claim_formats"><vspace />
-              OPTIONAL (zero or more). Claim format supported by this AM.
-              Options are (ISSUE#17: fill in. Need to say what claims format is supported).</t>
-            </list></t>
-
-          <t>Link relationship rel values for the endpoint URLs for the host:
-          <list hangIndent="6" style="hanging">
-              <t
-              hangText="http://kantarainitiative.org/confluence/display/uma/host_user_uri"><vspace />REQUIRED.
-              Available HTTP methods are as defined by OAuth for an end-user
-              authorization endpoint. Supplies the endpoint the host should
-              use to gather the consent of the authorizing user for a host-AM
-              relationship.</t>
-
-              <t
-              hangText="http://kantarainitiative.org/confluence/display/uma/host_token_uri"><vspace />REQUIRED.
-              Available HTTP methods are as defined by OAuth for a token
-              issuance endpoint. Supplies the endpoint the host should use to
-              ask for a host access token.</t>
-
-              <t
-              hangText="http://kantarainitiative.org/confluence/display/uma/host_registration_uri"><vspace />REQUIRED.
-              Supports the POST HTTP method, accompanied by a host access
-              token. Supplies the endpoint the host should use for registering
-              information with the AM, such as descriptions of resource sets
-              that are to be protected by this AM and requested scopes on
-              behalf of requesters. The AM SHOULD require the use of a
-              transport-layer security mechanism such as TLS when the host
-              sends requests to the host registration endpoint.</t>
-
-              <t
-              hangText="http://kantarainitiative.org/confluence/display/uma/host_token_validation_uri"><vspace />OPTIONAL.
-              Supports the POST HTTP method, accompanied by a host access
-              token. Supplies the endpoint the host should use to request
-              validation of access tokens presented to them by requesters in
-              Step 3. This endpoint SHOULD require the use of a
-              transport-layer security mechanism such as TLS.</t>
-            </list></t>
-
-          <t>Link relationship rel values for the endpoint URLs for the
-          requester: <list hangIndent="6" style="hanging">
-              <t
-              hangText="http://kantarainitiative.org/confluence/display/uma/req_user_uri"><vspace />
-              REQUIRED. Available HTTP methods are as defined by <xref
-              target="OAuth2"></xref> for a user authorization URL. Supplies
-              the user authorization URL requesters should use to gather the
-              consent of the authorizing user for user delegation flows in
-              synchronous person-to-service sharing scenarios. (See Section
-              @@TODO for the definition of this UMA-specific client profile.)
-              This endpoint SHOULD require the use of a transport-layer
-              security mechanism such as TLS.</t>
-
-              <t
-              hangText="http://kantarainitiative.org/confluence/display/uma/req_token_uri"><vspace />
-              REQUIRED. Available HTTP methods are as defined by <xref
-              target="OAuth2"></xref> for a token issuance URL. Supplies the
-              token URL requesters should use to ask for an access token in
-              step 2. This endpoint SHOULD require the use of a
-              transport-layer security mechanism such as TLS.</t>
-
-              <t
-              hangText="http://kantarainitiative.org/confluence/display/uma/req_authz_uri"><vspace />
-              REQUIRED. Supplies the authroization URL requesters should use
-              to ask for authorization to grant a scope. This endpoint SHOULD
-              require the use of a transport-layer security mechanism such as
-              TLS.</t>
-            </list></t>
-        </section>
-
-        <section title="Example">
-          <figure>
-            <preamble>For example:</preamble>
-
-            <artwork><![CDATA[
-      
-<!-- Applies to both hosts and requesters --> 
-<Property 
-  type="http://wguma.org/confluence/display/uma/token_formats">
-  saml
-</Property>
-<Property 
-  type="http://wguma.org/confluence/display/uma/claim_formats">
-  json
-</Property>
-
-<!-- Host protection API -->
-<Link
-  rel="http://wguma.org/confluence/display/uma/host_token_uri"
-  href="https://am.example.com/host/token_uri"></Link>
-<Link
-  rel="http://wguma.org/confluence/display/uma/host_user_uri"
-  href="https://am.example.com/host/user_uri"></Link>
-<Link rel="http://kantarainitiative.org/confluence/display/uma/host_registration_uri"
-  href="https://am.example.com/host/resource_details_uri"></Link>
-<Link
-  rel="http://wguma.org/confluence/display/uma/host_token_validation_uri"
-  href="https://am.example.com/host/token_validation_uri"></Link>
-
-<!-- Requester token-getting endpoints --> 
-<Link rel="http://wguma.org/confluence/display/uma/req_token_uri"
-  href="https://am.example.com/requester/token_uri"></Link> 
-<Link rel="http://wguma.org/confluence/display/uma/req_user_uri"
-  href="https://am.example.com/requester/user_uri"></Link>
-<Link rel="http://wguma.org/confluence/display/uma/req_authz_uri"
-  href="https://am.example.com/requester/authz_uri"></Link>
-       ]]></artwork>
-          </figure>
-        </section>
-      </section>
-
-      <section title="Host Registers with AM">
-        <t>If the Host has not already obtained a client identifier and
-        optional secret from this AM previously, in this step it MUST do so in
-        order to engage in OAuth-based interactions with the AM. This should
-        be preferably using the UMA dynamic registration protocol. (see <xref
-        target="Dyn-Reg">Dyn-Reg</xref>).</t>
-      </section>
-
-      <section title="Host Obtains Host Access Token">
-        <t>In this step, the Host acquires a host access token from the AM
-        that represents the approval of the authorizing User for the Host to
-        trust the AM for protecting resources belonging to the User.</t>
-
-        <t>The Host MUST use the <xref target="OAuth2">OAuth2</xref>
-        authorization code or SAML bearer token profile, utilizing the
-        end-user authorization and token endpoints as appropriate. Here the
-        host acts in the role of an OAuth client. The authorizing user acts in
-        the role of an OAuth end-user resource owner. The AM, through the
-        provided endpoint URLs, acts in the role of an OAuth authorization
-        server.</t>
-
-        <t>A succesful completion of this step is signfified by the Host
-        possesing a host access token for use at the authorized AM.</t>
-      </section>
-
-      <section title="Host registers resources to be protected">
-        <t>Once the Host has received a host access token (in the previous
-        step), it MAY immediately (or at any time until user authorization is
-        revoked) present the token at the AM's host_registration_uri endpoint
-        in order to register resources which the AM needs to protect. This is
-        done in the manner defined in [[draft-uma-resource-reg]].</t>
-
-        <t>Note that the Host is free to offer the option to protect any
-        subset of the user's resources using different AMs or other means
-        entirely, or to protect some resources and not others; any such
-        partitioning by the host or user is outside the scope of this
-        specification.</t>
-        
-        <section anchor="action-desc" title="Action Descriptions">
-          <t>The host defines an action that is available for use with resources
-            it manages in an action description encoded in <xref format="default"
-              target="RFC4627">JSON</xref> form and made publicly accessible through a
-            URI reference (it MAY include a fragment identifier). The actions
-            available for use at any one host MUST have unique URI references so
-            that the host's action descriptions are distinguishable by URI
-            reference. Action descriptions MAY reside anywhere; the host is not
-            required to self-host action descriptions and may wish to point to
-            standardized action descriptions residing elsewhere.</t>
-          
-          <t>An action description is an object with the name "action" and with
-            the following parameters:<list style="hanging">
-              <t hangText="_id">REQUIRED. A string that uniquely identifies the
-                action across all actions available at this host.</t>
-              
-              <t hangText="name">REQUIRED. A human-readable string describing the
-                action. The AM SHOULD use the name in its user interface to assist
-                the user in mapping authorization constraints to resource sets with
-                this permissible action.</t>
-              
-              <t hangText="icon_uri">OPTIONAL. A URI for a graphic icon
-                representing the action. If this is provided, the AM SHOULD use the
-                referenced icon in its user interface to assist the user in mapping
-                authorization constraints to resource sets with this permissible
-                action.</t>
-            </list></t>
-          
-          <figure>
-            <preamble>For example, this description characterizes an action that
-              involves reading or viewing resources (vs. creating them or editing
-              them in some fashion):</preamble>
-            
-            <artwork><![CDATA[{
-        "action":
-            {
-            "_id": "view"
-            "name": "Read-only",
-            "icon_uri": "http://www.example.com/icons/reading-glasses"
-        }
-}]]></artwork>
-          </figure>
-          
-          <t>Action descriptions MAY contain extension parameters that are not
-            defined in this specification. The names of extension parameters MUST
-            begin with "x-" or "X-".</t>
-        </section>
-        
-        <section anchor="resource-set-desc" title="Resource Set Descriptions">
-          <t>The host defines a resource set that needs UMA protection in a
-            resource set description encoded in <xref format="default"
-              target="RFC4627">JSON</xref> form. The host registers the description
-            and manages its lifecycle at the AM through the resource registration
-            API.</t>
-          
-          <t>A resource set description is an object with the name "resource_set"
-            and with the following parameters:<list style="hanging">
-              <t hangText="_id">REQUIRED. A string that uniquely identifies the
-                resource set. The resource set identifier has meaning only to the
-                host, except insofar as the AM is able to map this resource set
-                description to a particular user by virtue of the particular host
-                access token used to access the resource registration API. The host
-                MAY use any identifier scheme to represent resource sets, for
-                example, making its identifiers unique across all users of this host
-                or allowing for the sharing of resource set identifiers among users.
-                However, for privacy reasons, it is RECOMMENDED that the host assign
-                an identifier that is obscured with respect to any human-readable
-                resource set label used at this host. Further, this identifier MUST
-                match the resource set identifier path component of the URI used to
-                manage this description in the resource registration API; see <xref
-                  target="reg-api"></xref> for more information. (Typically this
-                matching is achieved through automatically populating the parameter
-                value on initial registration of the description.)</t>
-              
-              <t hangText="name">REQUIRED. A human-readable string describing a
-                set of one or more resources. The AM SHOULD use the name in its user
-                interface to assist the user in mapping authorization constraints to
-                this resource set.</t>
-              
-              <t hangText="icon_uri">OPTIONAL. A URI for a graphic icon
-                representing the resource set. If provided, the AM SHOULD use the
-                referenced icon in its user interface to assist the user in mapping
-                authorization constraints to this resource set.</t>
-              
-              <t hangText="actions">REQUIRED. An array referencing one or more
-                identifiers of actions that are permissible on this resource set.
-                Each action identifier MUST correspond to an action registered by
-                this host for this user at this AM.</t>
-            </list></t>
-          
-          <figure>
-            <preamble>For example, this description characterizes a resource set
-              (a photo album) that can potentially be only viewed, or alternatively
-              to which full access can be granted; the URIs point to action
-              descriptions, as dictated in <xref
-                target="action-desc"></xref>:</preamble>
-            
-            <artwork><![CDATA[{
-        "resource_set":
-            {
-            "_id":  "112210f47de98100",
-            "name": "Photo album",
-            "icon_uri": "http://www.example.com/icons/flower",
-            "actions":
-                        ["http://photoz.example.com/dev/actions/view",
-                        "http://photoz.example.com/dev/actions/all"]
-        }
-}]]></artwork>
-          </figure>
-          
-          <t>Resource set descriptions descriptions MAY contain extension
-            parameters that are not defined in this specification. The names of
-            extension parameters MUST begin with "x-" or "X-".</t>
-          
-          <t>When a host creates or updates a resource set description (see <xref
-            target="reg-api"></xref>), the AM MUST attempt to retrieve the
-            referenced action descriptions. It MAY cache such descriptions as long
-            as indicated in the HTTP header for the action description resource
-            unless the resource set description is subsequently updated within the
-            validity period. At the beginning of an authorizing user's login session
-            at the AM, the AM MUST attempt to re-retrieve action descriptions
-            applying to that user whose cached versions have expired.</t>
-        </section>
-        
-      </section>
-    </section>
-
-    <section anchor="reg-api" title="Resource Registration API">
-      <t>The host uses a RESTful API at the AM's host_registration_uri to
-      create, read, update, and delete resource set descriptions, along with
-      listing groups of such descriptions. The host MUST use its valid host
-      access token obtained previously in UMA protocol step 1 to gain access
-      to the API.</t>
-
-      <t>Individual resource set descriptions are managed at URIs with this
-      structure: "{reguri}/host/{hostid}/resource_set/{resourcesetid}"</t>
-
-      <t>The components of these URIs are defined as follows:<list
-          style="hanging">
-          <t hangText="{reguri}">The AM's host_registration_uri as advertised
-          in its metadata. This endpoint, its security requirements, and its
-          requirements around advertisement in metadata are defined in UMA
-          protocol step 1.</t>
-
-          <t hangText="{hostid}">A registration area at the AM that is
-          specific to this host. The host MUST use the OAuth client identifier
-          it was assigned by this AM as its host identifier. If the host
-          identifier does not match the host access token used at the host
-          registration endpoint, the AM MUST report an HTTP 403 Forbidden
-          error (see example below) and fail to act on the request.</t>
-
-          <t hangText="{resourcesetid}">An identifier for a resource set
-          description. The identifier MUST match the "_id" parameter value in
-          the description itself.</t>
-        </list></t>
-
-      <t>Without a specific resource identifier path component, the URI
-      applies to the set of resource set descriptions already registered.</t>
-
-      <t>Following is a summary of the five registration API operations the AM
-      is REQUIRED to support. Each is defined in its own section below. All
-      other methods are unsupported.<list style="symbols">
-          <t>Create resource set description: PUT
-          /host/{hostid}/resource_set/{resourcesetid}</t>
-
-          <t>Read resource set description: GET
-          /host/{hostid}/resource_set/{resourcesetid}</t>
-
-          <t>Update resource set description: PUT
-          /host/{hostid}/resource_set/{resourcesetid}</t>
-
-          <t>Delete resource set description: DELETE
-          /host/{hostid}/resource_set/{resourcesetid}</t>
-
-          <t>List resource set descriptions: GET
-          /host/{hostid}/resource_set/</t>
-        </list></t>
-
-      <t>The AM MUST respond to host requests using unsupported HTTP methods
-      with an HTTP 403 Forbidden error and MUST fail to act on the
-      request.</t>
-
-      <figure>
-        <preamble>HTTP response (unsupported method or host ID not matching
-        the presented host access token):</preamble>
-
-        <artwork><![CDATA[HTTP/1.1 403 Forbidden
-...
-
-(Body provides user-readable explanation of the error.)]]></artwork>
-      </figure>
-
-      <section anchor="create-resource-set"
-               title="Create Resource Set Description">
-        <t>Adds a new resource set description using the PUT method. The host
-        assigns a unique identifier to the action. The host is free to use its
-        own methods of identifying and describing resource sets; the AM MUST
-        treat them as opaque for the purpose of authorizing access, other than
-        associating them with the authorizing user represented by the host
-        access token used to access the API. On successfully registering a
-        resource set, the host MUST use UMA mechanisms to limit access to any
-        resources corresponding to this resource set.</t>
-
-        <figure>
-          <preamble>HTTP request:</preamble>
-
-          <artwork><![CDATA[PUT /host/{hostid}/resource/{resourceid}
-Content-Type: application/json
-...
-
-(Body contains JSON representation of resource set description to be created.)]]></artwork>
-        </figure>
-
-        <figure>
-          <preamble>HTTP response (success):</preamble>
-
-          <artwork><![CDATA[HTTP/1.1 201 Created
-Content-Type: application/json
-Location: (URL of the created resource, same as that which was PUT.)
-...]]></artwork>
-        </figure>
-      </section>
-
-      <section anchor="read-resource-set"
-               title="Read Resource Set Description">
-        <t>Reads a previously registered resource set description using the
-        GET method.</t>
-
-        <figure>
-          <preamble>HTTP request:</preamble>
-
-          <artwork><![CDATA[GET /host/{hostid}/resource/{resourceid} HTTP/1.1
-...]]></artwork>
-        </figure>
-
-        <figure>
-          <preamble>HTTP response (success):</preamble>
-
-          <artwork><![CDATA[HTTP/1.1 200 OK
-Content-Type: application/json
-ETag: (entity tag of the resource artifact)
-...
-
-(Body contains JSON representation of the resource set description.)]]></artwork>
-        </figure>
-
-        <figure>
-          <preamble>HTTP response (not found):</preamble>
-
-          <artwork><![CDATA[HTTP/1.1 404 Not Found
-...
-
-(Body provides user-readable explanation of the error.)]]></artwork>
-        </figure>
-      </section>
-
-      <section anchor="update-resource-set"
-               title="Update Resource Set Description">
-        <t>Updates a previously registered resource set description using the
-        PUT method.</t>
-        
-        <t>This API is different from the create new resource set description
-          (<xref target="create-resource-set"></xref>) because it assumes
-          that prior registration of the resource has occured.</t>
-        
-        <t>(ISSUE#27: Can Update Resource Set Description API 
-          mistakenly overwrite/destroy an existing
-        resource description?).</t>
-
-        <figure>
-          <preamble>HTTP request:</preamble>
-
-          <artwork><![CDATA[PUT /host/{hostid}/resource/{resourceid}
-Content-Type: application/json
-If-Match: (entity tag of the resource if operation is to be idempotent)
-...
-
-(Body contains JSON representation of resource set description to be updated.)]]></artwork>
-        </figure>
-
-        <figure>
-          <preamble>HTTP response (success):</preamble>
-
-          <artwork><![CDATA[HTTP/1.1 204 No Content
-...]]></artwork>
-        </figure>
-
-        <figure>
-          <preamble>HTTP response (entity tag does not match):</preamble>
-
-          <artwork><![CDATA[HTTP/1.1 412 Precondition failed
-...]]></artwork>
-        </figure>
-      </section>
-
-      <section anchor="delete-resource-set"
-               title="Delete Resource Set Description">
-        <t>Deletes a previously registered resource set description using the
-        DELETE method.</t>
-
-        <figure>
-          <preamble>HTTP request:</preamble>
-
-          <artwork><![CDATA[DELETE /host/{hostid}/resource/{resourceid}
-If-Match: (entity tag of the resource if operation to be idempotent)
-...]]></artwork>
-        </figure>
-
-        <figure>
-          <preamble>HTTP response (success):</preamble>
-
-          <artwork><![CDATA[HTTP/1.1 204 No content
-...]]></artwork>
-        </figure>
-
-        <figure>
-          <preamble>HTTP response (not found):</preamble>
-
-          <artwork><![CDATA[HTTP/1.1 404 Not Found
-...
-
-(Body provides user-readable explanation of the error.)]]></artwork>
-        </figure>
-
-        <figure>
-          <preamble>HTTP response (entity tag does not match):</preamble>
-
-          <artwork><![CDATA[HTTP/1.1 412 Precondition failed
-...]]></artwork>
-        </figure>
-      </section>
-
-
-
-      <section anchor="list-resource-sets"
-               title="List Resource Set Descriptions">
-        <t>Lists all previously registered resource set identifiers for this
-        user using the GET method. The list is in the form of a JSON array of
-        {resourcesetid} values.</t>
-
-        <figure>
-          <preamble>HTTP request:</preamble>
-
-          <artwork><![CDATA[GET /host/{hostid}/resource_set/
-...]]></artwork>
-        </figure>
-
-        <figure>
-          <preamble>HTTP response:</preamble>
-
-          <artwork><![CDATA[HTTP/1.1 200 OK
-Content-Type: application/json
-...
-
-(Body contains JSON array of {resourcesetid} values.)]]></artwork>
-        </figure>
-      </section>
-      
-      <section anchor="list-resource-sets-example" title="Example">
-          <t>The following example illustrates the intent and usage of the
-            resource registration protocol.</t>
-          
-          <t>This example contains some steps that are exclusively in the realm of
-            user experience rather than web protocol, to achieve realistic
-            illustration; these steps are labeled "User experience only". Some other
-            steps are exclusively internal to the operation of the entity being
-            discussed; these are labeled "Internal only".</t>
-          
-          <t>An authorizing user, Alice Adams, has just uploaded a photo of her
-            new puppy to a host, Photoz.example.com, and wants to ensure that this
-            specific photo is not publicly accessible.</t>
-          
-          <t>Alice has already introduced this host to her AM,
-            CopMonkey.example.com, and thus Photoz has already obtained an OAuth
-            client ID and an UMA host access token from CopMonkey. However, Alice
-            has not previously instructed Photoz to use CopMonkey to protect any
-            other photos of hers.</t>
-          
-          <t>Alice has previously visited CopMonkey to map a default "do not share
-            with anyone" authorization constraint to any resource sets registered by
-            Photoz, until such time as she maps some other less-draconian
-            constraints to those resources. (User experience only. This may have
-            been done at the time Alice introduced the host to the AM, and/or it
-            could have been a global or host-specific preference setting. A
-            different constraint or no constraint at all might be associated with
-            newly protected resources.) Other kinds of constraints she may
-            eventually map to particular photos or albums might be "Share only with
-            husband@email.example.net" or "Share only with people in my 'family'
-            group".</t>
-          
-          <t>Photoz itself has a publicly documented API that offers two dozen
-            different methods that apply to single photos, such as "addTags" and
-            "getSizes", but rolls them up into two photo-related actions: "viewing"
-            (consisting of varous read-only operations) and "all" (consisting of
-            various reading, editing, and printing operations). It defines two
-            Web-accessible JSON-encoded documents called action descriptions that
-            represent these actions, which it is able to reuse for all of its users
-            (not just Alice). The "name" parameter values are intended to be seen by
-            Alice when she maps authorization constraints to specific resource sets
-            and actions while visiting CopMonkey, such that Alice would see the
-            strings "View Photo and Related Info" and "All Actions", likely
-            accompanied by the referenced icons, in the CopMonkey interface. (Other
-            users of Photoz might similarly see the same labels at CopMonkey or
-            whatever other AM they use.)</t>
-          
-          <figure>
-            <artwork><![CDATA[{
-        "action":
-            {
-            "_id": "view"
-            "name": "View Photo and Related Info",
-            "icon_uri": "http://www.example.com/icons/reading-glasses"
-        }
-}]]></artwork>
-          </figure>
-          
-          <figure>
-            <artwork><![CDATA[{
-        "action":
-            {
-            "_id": "all"
-            "name": "All Actions",
-            "icon_uri": "http://www.example.com/icons/galaxy"
-        }
-}]]></artwork>
-          </figure>
-          
-          <t>While visiting Photoz, Alice selects a link or button that instructs
-            the site to "Protect" or "Share" this single photo (user experience
-            only; Photoz could have made this a default or preference setting).</t>
-          
-          <t>As a result, Photoz defines for itself a resource set that represents
-            this photo (internal only; Photoz is the only application that knows how
-            to map a particular photo to a particular resource set). Photoz also
-            prepares the following resource set description, which is specific to
-            Alice and her photo. The "name" parameter value is intended to be seen
-            by Alice in mapping authorization constraints to specific resource sets
-            and actions when she visits CopMonkey, such that Alice would see the
-            string "Steve the puppy!", likely accompanied by the referenced icon, in
-            the CopMonkey interface. The possible actions on this resource set are
-            indicated with URI references to the action descriptions, as defined
-            just above.</t>
-          
-          <figure>
-            <artwork><![CDATA[{
-        "resource_set":
-            {
-            "_id": "112210f47de98100"
-            "name": "Steve the puppy!",
-            "icon_uri": "http://www.example.com/icons/flower",
-            "actions":
-                        ["http://photoz.example.com/dev/actions/view",
-                        "http://photoz.example.com/dev/actions/all"]
-        }
-}]]></artwork>
-          </figure>
-          
-          <t>Photoz uses the "create resource set description" method of
-            CopMonkey's standard UMA-based resource registration API, presenting its
-            Alice-specific host access token there, to register and assign an
-            identifier to the resource set description. The resource set identifier
-            path component of the URL matches the "_id" parameter value in the
-            description.</t>
-          
-          <figure>
-            <artwork><![CDATA[PUT /host/photoz.example.com/resource/112210f47de98100
-Content-Type: application/json
-...
-
-{
-        "resource_set":
-           {
-           "_id": "112210f47de98100"
-           "name": "Steve the puppy!",
-           "icon_uri": "http://www.example.com/icons/flower",
-           "actions":
-                        ["http://photoz.example.com/dev/actions/view",
-                        "http://photoz.example.com/dev/actions/all"]
-         }
-}]]></artwork>
-          </figure>
-          
-          <t>Once this description has been successfully registered, Photoz is
-            responsible for responding to requesters' attempts to access this photo,
-            achieving protection of the resource by "outsourcing" this task to
-            CopMonkey.</t>
-          
-          <t>At the time Alice indicates she would like this photo protected,
-            Photoz can choose to redirect Alice to CopMonkey for further
-            authorization constraint mapping, access auditing, and other AM-related
-            tasks (user experience only).</t>
-          
-          <t>Over time, as Alice uploads other photos and creates and organizes
-            photo albums, and as Photoz makes new action functionality available,
-            Photoz can use additional methods of the resource registration API to
-            ensure that CopMonkey's understanding of Alice's protected resources
-            matches its own.</t>
-      </section>
-      
-    </section>
-
-
-
 
     <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
 
     <section title="Error Messages">
+      <t>[TBS: Lukasz to rewrite this section and put in appropriate "hooks"
+      everywhere a specific error message should be produced. Possibly
+      consider moving this section near the front of the document.]</t>
+
       <t>Ultimately the host is responsible for either granting the access the
       requester attempted, or returning an error response to the requester
       with a reason for the failure. <xref target="OAuth2"></xref> defines
@@ -1541,8 +1626,8 @@ Content-Type: application/json
     <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
 
     <section title="Security Considerations">
-      <t>All drafts are required to have a security considerations section.
-      See <xref target="RFC3552">RFC 3552</xref> for a guide.</t>
+      <t>ISSUE: All drafts are required to have a security considerations
+      section. See RFC 3552.</t>
 
       <t>This specification relies mainly on OAuth security mechanisms for
       protecting the host registration endpoint at the AM so that only a
@@ -1577,7 +1662,8 @@ Content-Type: application/json
       identifiers in order to avoid leaking personally identifiable
       information to requesters through the "scope" mechanism.</t>
 
-      <t>(ISSUE#19: Other stuff goes here too. More privacy considerations.)</t>
+      <t>(ISSUE#19: Other stuff goes here too. More privacy
+      considerations.)</t>
     </section>
 
     <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
@@ -1601,138 +1687,169 @@ Content-Type: application/json
           dynamic registration. For minimal conformance, AMs are not required
           to support dynamic registration. Hosts need not support the
           requesting of dynamic registration at either conformance level.</t>
-
-          <t>Resource registration: For minimal conformance, AMs and hosts
-          MUST support resource registration.</t>
         </list></t>
     </section>
-
-    <!-- Possibly a 'Contributors' section ... -->
 
     <section anchor="IANA" title="IANA Considerations">
       <t>TBD</t>
     </section>
 
     <section anchor="Acknowledgments" title="Acknowledgments">
-      <t>List of UMA contributors</t>
+      <t>The contributors to this specification include the Kantara UMA Work
+      Group participants, a list of whom can be found at <xref
+      target="UMAnitarians"></xref>.</t>
     </section>
 
     <section title="Issues">
       <t>Catalog of issues (some noted within the text above as well,
       indicated by "ISSUE"):<list style="numbers">
-          <t>ISSUE#01: Need to specify options for claim formats in the XRD.</t>
+          <t>ISSUE#01: Need to specify options for claim formats in the
+          XRD.</t>
 
-        <t>ISSUE#02: Need to clarify how the requester's user authorization endpoint
-          would be used in an UMA (vs. an OAuth) fashion for collecting
-          synchronous authorizing user consent in Phase 2, based on a
-          privileged type of claim request.</t>
+          <t>ISSUE#02: RESOLVED. (Need to clarify how the requester's user
+          authorization endpoint would be used in an UMA (vs. an OAuth)
+          fashion for collecting synchronous authorizing user consent in Phase
+          2, based on a privileged type of claim request.) RESOLUTION: The
+          need for this endpoint goes away because it's all handled by
+          policies that require certain claims to be provided, one of which
+          could be for the requesting party to prove it has a certain identity
+          (which could happen to be an identity that the authorizing user can
+          prove). EDITED IN: Rev 11.</t>
 
-        <t>ISSUE#03: Do we need to specify explicitly a means for the requester to get
-          a new or refreshed access token from the AM, or can we mostly just
-          refer to OAuth for this? Right now this interaction type doesn't
-          have its own section.</t>
+          <t>ISSUE#03: RESOLVED. (Do we need to specify explicitly a means for
+          the requester to get a new or refreshed access token from the AM, or
+          can we mostly just refer to OAuth for this? Right now this
+          interaction type doesn't have its own section.) RESOLUTION: New
+          section added. EDITED IN: Rev 09 (I think).</t>
 
-        <t>ISSUE#04: Need to specify the format of the token validation request
-          message. Can Maciej supply what they're using?</t>
+          <t>ISSUE#04: Need to specify the format of the token validation
+          request message. Can Maciej supply what they're using?</t>
 
-        <t>ISSUE#05: When the token is invalid, what's the current OAuth thinking on
-          what we should return? Is there any reason not to copy OAuth as
-          closely as possible in this case? Or should a token status of
-          "invalid" be used, and returned as success (unifying the different
-          kinds of responses to the validation request)?</t>
+          <t>ISSUE#05: When the token is invalid, what's the current OAuth
+          thinking on what we should return? Is there any reason not to copy
+          OAuth as closely as possible in this case? Or should a token status
+          of "invalid" be used, and returned as success (unifying the
+          different kinds of responses to the validation request)?</t>
 
-        <t>ISSUE#06: Need to complete the design of the requested-scope registration
-          interaction and its associated error messages.</t>
+          <t>ISSUE#06: Need to complete the design of the requested-scope
+          registration interaction and its associated error messages.</t>
 
-        <t>ISSUE#07: Need to complete the design of the authorization request
-          interaction and its associated error messages.</t>
+          <t>ISSUE#07: Need to complete the design of the authorization
+          request interaction and its associated error messages.</t>
 
-        <t>ISSUE#08: Sort out whether resource set descriptions are supposed to use
-          scope URIs or scope identifiers! It's inconsistent now.</t>
+          <t>ISSUE#08: Sort out whether resource set descriptions are supposed
+          to use scope URIs or scope identifiers! It's inconsistent now.</t>
 
-        <t>ISSUE#09: Move the resource registration API section to be a subsection
-          under the previous big section.</t>
+          <t>ISSUE#09: Move the resource registration API section to be a
+          subsection under the previous big section.</t>
 
-        <t>ISSUE#10: Copy over the resource set description and scope description
-          content.</t>
-        
-        <t>ISSUE#11:Refer to OAuth processes for getting a token
+          <t>ISSUE#10: RESOLVED. (Copy over the resource set description and
+          scope description content.) RESOLUTION: Copied over. EDITED IN: Rev
+          07 (I think).</t>
+
+          <t>ISSUE#11:RESOLVED. Refer to OAuth processes for getting a token
           "autonomously" here? Currently there is no section for the
-          requester-AM token-getting interaction. 
-          RESOLUTION#11: a new section has been added, to discuss
-          about the usage of OAuth flow for the requester 
-          to gen a token from the AM.</t>
-        
-        <t>ISSUE#12:  If the the AM finds the requester's access token to be invalid,
-          it returns an UMA error message (ISSUE#12: correct? HTTP success?) to
-          indicate that the requester's token is invalid.</t>
-        
-        <t>ISSUE#13: How to structure the body to
-        include the scope and also the requester's access token?</t>
-        
-        <t>ISSUE#14: Need to unify the request for
-        authorization with the providing of claims, so that this can be a
-        single request-response pattern that can loop as required.</t>
-        
-        <t>ISSUE#15: If the content-type (of the claims response document)
-        is not recognized by the AM, what happens then? 
-        Should be an error from the AM.</t>
-        
-        <t>ISSUE#16: Eventually need some special claim types that 
-        allow for the trusted-claims model to unfold.</t>
-        
-        <t>ISSUE#17: fill in. Need to say what claims format is supported.</t>
-        
-        <t>ISSUE#18: Provide commentary on any
-          requirements layered on the forthcoming OAuth security considerations
-          section; discuss UMA-layer implications for more meaningful
-          authentication of requesters/requesting parties; discuss implications of
-          user-mediated AM/host trust model; discuss short-lived token technique
-          for lightweight requester correlation...</t>
-        
-        <t>ISSUE#19: Other stuff goes here too. More privacy considerations.</t>
-        
-        <t>ISSUE#20: From Lukasz email 6/6/2011: 
-          Rev8 Section 2.2: +1 for validation request in json format 
-          instead of application/x-www-form-urlencoded. </t>
-        
-        <t>ISSUE#21: From Lukasz email 6/6/2011: 
-          Rev8 Section 2.4: AM adds a scope to the requester's access token. 
-          Maybe I am missing something but I don't see the explanation in the 
-          spec how requester's token is issued at first. 
-          I think some parts are mutual for the host and the requester 
-          i.e. AM Discovery, optional Dynamic Client Registration.  </t>
-        
-        <t>ISSUE#22: From Lukasz email 6/6/2011: 
-          Rev8 Section 3.4.2: Example is missing required '_id' parameter.  
-          ACTION#22: '_id' parameter added.</t>
-        
-        <t>ISSUE#23: From Lukasz email 6/6/2011: 
-          Rev8 Section 4: 403 Forbidden response when: 'unsupported method or host ID 
-          not matching the presented host access token'. 
-          I think AM should return 403 in case of performing operations on 
-          resources of different user (not owned resources at this same host), 
-          instead of returning 404 Not Found to not disclose 
-          presence of the resource set at the AM. </t>
-        
-        <t>ISSUE#24: From Lukasz email 6/6/2011: 
-          Rev8 Section 4.1: Empty response body? 
-          In SAM we return 'resource_id' and 'policy_uri' 
-          so that the host can redirect the user to 
-          the policy definition page (sharing setting screen) on AM. </t>
-        
-        <t>ISSUE#25: From Lukasz email 6/6/2011: 
-        Section 4.1 - what happens when a resource (being registered) already exists?</t>
-        
-        <t>ISSUE#26: From Lukasz email 6/6/2011: 
-          Section 4.1 to 4.4: URLs in the examples mistakenly contains '/user/{userid}'.
-          ACTION#26: examples have been corrected.</t>
-        
-        <t>ISSUE#27: Can Update Resource Set Description API 
-          mistakenly overwrite/destroy an existing
-          resource description?.  (<xref target="update-resource-set"></xref>)
-        </t>
-        
+          requester-AM token-getting interaction. RESOLUTION: A new section
+          has been added, to discuss about the usage of OAuth flow for the
+          requester to gen a token from the AM. EDITED IN: Rev 09 (I
+          think).</t>
+
+          <t>ISSUE#12: If the the AM finds the requester's access token to be
+          invalid, it returns an UMA error message (ISSUE#12: correct? HTTP
+          success?) to indicate that the requester's token is invalid.</t>
+
+          <t>ISSUE#13: How to structure the body to include the scope and also
+          the requester's access token?</t>
+
+          <t>ISSUE#14: Need to unify the request for authorization with the
+          providing of claims, so that this can be a single request-response
+          pattern that can loop as required.</t>
+
+          <t>ISSUE#15: If the content-type (of the claims response document)
+          is not recognized by the AM, what happens then? Should be an error
+          from the AM.</t>
+
+          <t>ISSUE#16: Eventually need some special claim types that allow for
+          the trusted-claims model to unfold.</t>
+
+          <t>ISSUE#17: fill in. Need to say what claims format is
+          supported.</t>
+
+          <t>ISSUE#18: Provide commentary on any requirements layered on the
+          forthcoming OAuth security considerations section; discuss UMA-layer
+          implications for more meaningful authentication of
+          requesters/requesting parties; discuss implications of user-mediated
+          AM/host trust model; discuss short-lived token technique for
+          lightweight requester correlation...</t>
+
+          <t>ISSUE#19: Other stuff goes here too. More privacy
+          considerations.</t>
+
+          <t>ISSUE#20: From Lukasz email 6/6/2011: Rev8 Section 2.2: +1 for
+          validation request in json format instead of
+          application/x-www-form-urlencoded.</t>
+
+          <t>ISSUE#21: From Lukasz email 6/6/2011: Rev8 Section 2.4: AM adds a
+          scope to the requester's access token. Maybe I am missing something
+          but I don't see the explanation in the spec how requester's token is
+          issued at first. I think some parts are mutual for the host and the
+          requester i.e. AM Discovery, optional Dynamic Client
+          Registration.</t>
+
+          <t>ISSUE#22: From Lukasz email 6/6/2011: Rev8 Section 3.4.2: Example
+          is missing required '_id' parameter. ACTION#22: '_id' parameter
+          added.</t>
+
+          <t>ISSUE#23: From Lukasz email 6/6/2011: Rev8 Section 4: 403
+          Forbidden response when: 'unsupported method or host ID not matching
+          the presented host access token'. I think AM should return 403 in
+          case of performing operations on resources of different user (not
+          owned resources at this same host), instead of returning 404 Not
+          Found to not disclose presence of the resource set at the AM.</t>
+
+          <t>ISSUE#24: From Lukasz email 6/6/2011: Rev8 Section 4.1: Empty
+          response body? In SAM we return 'resource_id' and 'policy_uri' so
+          that the host can redirect the user to the policy definition page
+          (sharing setting screen) on AM.</t>
+
+          <t>ISSUE#25: From Lukasz email 6/6/2011: Section 4.1 - what happens
+          when a resource (being registered) already exists?</t>
+
+          <t>ISSUE#26: RESOLVED. From Lukasz email 6/6/2011: Section 4.1 to
+          4.4: URLs in the examples mistakenly contains '/user/{userid}'.
+          RESOLUTION: Examples have been corrected.</t>
+
+          <t>ISSUE#27: Can Update Resource Set Description API mistakenly
+          overwrite/destroy an existing resource description?. (<xref
+          target="update-resource-set"></xref>)</t>
+
+          <t>ISSUE #28: Okay to require the AM to support the authorization
+          code grant type, in addition to optionally supporting the SAML
+          bearer assertion grant type, to give a baseline of
+          mandatory-to-implement functionality?</t>
+
+          <t>ISSUE #29: Should we extend the resource set (and/or scope)
+          description parameters along the lines of the SMART project? Related
+          to ISSUE #24 as well.</t>
+
+          <t>ISSUE #30: We say the {hostid} has to be the client ID, but what
+          if the host is in the position of using anonymous credentials for
+          some reason? Is that even a possibility in the case of hosts (vs.
+          requesters)? Should we identify this more obviously as a
+          constraint?</t>
+
+          <t>ISSUE #31: Should the response to creating or updating a resource
+          set description play back the just-registered description? See how
+          SCIM works for an example of this.</t>
+
+          <t>ISSUE #32: Need to add back detail on how the host tells the
+          requester which AM to go to so that it can discover the token
+          endpoint and authorization endpoint.</t>
+
+          <t>ISSUE #33: Should it be possible to have an "implicit resource
+          set" somehow that (in syntactic-sugar fashion) allows permissions to
+          be passed around much as scopes already are passed around in plain
+          OAuth?</t>
         </list></t>
     </section>
   </middle>
@@ -1761,6 +1878,20 @@ Content-Type: application/json
           </author>
 
           <date year="2010" />
+        </front>
+      </reference>
+
+      <reference anchor="OAuth-SAML"
+                 target="http://tools.ietf.org/html/draft-ietf-oauth-saml2-bearer-03">
+        <front>
+          <title>SAML 2.0 Bearer Assertion Grant Type Profile for OAuth
+          2.0</title>
+
+          <author initials="B." surname="Campbell">
+            <organization>Campbell</organization>
+          </author>
+
+          <date month="February" year="2011" />
         </front>
       </reference>
 
@@ -1802,19 +1933,6 @@ Content-Type: application/json
           <date year="2010" />
         </front>
       </reference>
-      
-      <reference anchor="UMA-usecases"
-        target="http://kantarainitiative.org/confluence/display/uma/UMA+Scenarios+and+Use+Cases">
-        <front>
-          <title>UMA Scenarios and Use-Cases</title>
-          
-          <author initials="E." surname="Maler">
-            <organization>Kantara</organization>
-          </author>
-          
-          <date year="2011" />
-        </front>
-      </reference>
 
       <reference anchor="ID-ietf-httpbis-p1-messaging"
                  target="http://tools.ietf.org/html/draft-ietf-httpbis-p1-messaging-14">
@@ -1828,30 +1946,77 @@ Content-Type: application/json
           <date year="2011" />
         </front>
       </reference>
+
+      &RFC4627;
     </references>
 
     <references title="Informative References">
-      <!-- Here we use entities that we defined at the beginning. -->
+      <reference anchor="UMA-usecases"
+                 target="http://kantarainitiative.org/confluence/display/uma/UMA+Scenarios+and+Use+Cases">
+        <front>
+          <title>UMA Scenarios and Use Cases</title>
 
-      &RFC3552;
-      &RFC4627;
+          <author initials="E." surname="Maler">
+            <organization>Kantara</organization>
+          </author>
+
+          <date year="2011" />
+        </front>
+      </reference>
+
+      <reference anchor="UMA-userstories"
+                 target="http://kantarainitiative.org/confluence/display/uma/User+Stories">
+        <front>
+          <title>UMA User Stories</title>
+
+          <author initials="E." surname="Maler">
+            <organization></organization>
+          </author>
+
+          <date year="2010" />
+        </front>
+      </reference>
+
+      <reference anchor="UMAnitarians"
+                 target="http://kantarainitiative.org/confluence/display/uma/Participant+Roster">
+        <front>
+          <title>UMA Participant Roster</title>
+
+          <author initials="E." surname="Maler">
+            <organization>Maler</organization>
+          </author>
+
+          <date year="2011" />
+        </front>
+      </reference>
     </references>
 
     <section anchor="History" title="Document History">
       <t>NOTE: To be removed by RFC editor before publication as an RFC</t>
-      
-      
+
+      <t>Changes in Rev 11:<list style="symbols">
+          <t>Removed the requester user authorization endpoint, as it is now
+          superfluous.</t>
+
+          <t>Changed the scope-related language to include "permissions".</t>
+
+          <t>Aligned all of the endpoint and API names.</t>
+
+          <t>Shortened the official XRD rel values for host_registration_uri
+          to host_reg_uri and host_token_validation_uri to host_token_val_uri.
+          (Okay?)</t>
+        </list></t>
+
       <t>Changes in Rev 9:<list style="symbols">
-        <t>Added new top-level section on Requester obtaining
-        an acces token from the AM.</t>
-      </list></t>
-        
-        
+          <t>Added new top-level section on Requester obtaining an acces token
+          from the AM.</t>
+        </list></t>
+
       <t>Changes in Rev 8:<list style="symbols">
-        <t>Added sections on Action Descriptions and Resource Set Descriptions.
-        Text obtained from the Resource Registration doc, which is being
-        discontinued.</t>
-      </list></t>
+          <t>Added sections on Action Descriptions and Resource Set
+          Descriptions. Text obtained from the Resource Registration doc,
+          which is being discontinued.</t>
+        </list></t>
 
       <t>Changes in Rev 7:<list style="symbols">
           <t>Reintroduced three-phase language, but removed overt mention of
