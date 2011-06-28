@@ -8,7 +8,7 @@
 <!ENTITY RFC3552 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3552.xml">
 <!ENTITY RFC4627 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.4627.xml">
 ]>
-<rfc category="std" docName="draft-uma-core-v1-00-Rev11" ipr="trust200902">
+<rfc category="std" docName="draft-uma-core-v1-00-Rev12" ipr="trust200902">
   <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
 
   <?rfc toc='yes' ?>
@@ -78,7 +78,7 @@
       </address>
     </author>
 
-    <date day="26" month="June" year="2011" />
+    <date day="28" month="June" year="2011" />
 
     <abstract>
       <t>This specification defines the User-Managed Access (UMA) core
@@ -297,8 +297,8 @@
             <t hangText="host registration endpoint">Part of the protection
             API at the AM used by the host. The endpoint at the AM at which
             the host registers both resource sets which the AM needs to
-            protect and also permissions that a requester will be asking
-            for.</t>
+            protect and also permissions that a requester will be asking for.
+            (ISSUE #34: One endpoint or two for registration?)</t>
 
             <t hangText="token validation endpoint">Part of the protection API
             at the AM used by the host. The endpoint at the AM at which the
@@ -439,7 +439,8 @@
               requesters are seeking (see <xref
               target="h-am-register-scope"></xref>). The AM SHOULD require the
               use of a transport-layer security mechanism such as TLS when the
-              host sends requests to the host registration endpoint.</t>
+              host sends requests to the host registration endpoint. (ISSUE
+              #34: One endpoint or two for registration?)</t>
 
               <t
               hangText="http://kantarainitiative.org/confluence/display/uma/host_token_val_uri"><vspace />OPTIONAL.
@@ -643,8 +644,8 @@
             "name": "Steve the puppy!",
             "icon_uri": "http://www.example.com/icons/flower",
             "scopes":
-                        ["http://photoz.example.com/dev/actions/view",
-                        "http://photoz.example.com/dev/actions/all"]
+                        ["http://photoz.example.com/dev/scopes/view",
+                        "http://photoz.example.com/dev/scopes/all"]
         }
 }]]></artwork>
           </figure>
@@ -668,8 +669,8 @@ Content-Type: application/json
            "name": "Steve the puppy!",
            "icon_uri": "http://www.example.com/icons/flower",
            "scopes":
-                        ["http://photoz.example.com/dev/actions/view",
-                        "http://photoz.example.com/dev/actions/all"]
+                        ["http://photoz.example.com/dev/scopes/view",
+                        "http://photoz.example.com/dev/scopes/all"]
          }
 }]]></artwork>
           </figure>
@@ -777,7 +778,7 @@ Content-Type: application/json
               the referenced icon in its user interface to assist the user in
               setting policies for protecting this resource set.</t>
 
-              <t hangText="actions">REQUIRED. An array referencing one or more
+              <t hangText="scopes">REQUIRED. An array referencing one or more
               URIs of scope descriptions that are available for this resource
               set.</t>
             </list></t>
@@ -795,9 +796,9 @@ Content-Type: application/json
             "_id":  "112210f47de98100",
             "name": "Photo album",
             "icon_uri": "http://www.example.com/icons/flower",
-            "actions":
-                        ["http://photoz.example.com/dev/actions/view",
-                        "http://photoz.example.com/dev/actions/all"]
+            "scopes":
+                        ["http://photoz.example.com/dev/scopes/view",
+                        "http://photoz.example.com/dev/scopes/all"]
         }
 }]]></artwork>
           </figure>
@@ -1121,9 +1122,9 @@ Content-Type: application/json
 
           <t>If the AM reports that the requester access token is valid (see
           <xref target="token-valid"></xref>) but none of the permissions
-          associated with the token don't match the scope of attempted access,
-          the host registers a suitable permission on the requester's behalf
-          at the AM (see <xref target="h-am-register-scope"></xref>) and then
+          associated with the token match the scope of attempted access, the
+          host registers a suitable permission on the requester's behalf at
+          the AM (see <xref target="h-am-register-scope"></xref>) and then
           responds to the requester with instructions on where to go to
           request authorization to associate that permission with its token
           (see <xref target="insufficient-scope"></xref>).</t>
@@ -1219,9 +1220,9 @@ Content-Type: application/json
           one method for including an access token, or that it is otherwise
           malformed.</t>
 
-          <t>(ISSUE #32: Need more detail here? It needs to convey the AM
+          <t>(ISSUE #32: Need more detail here. It needs to convey the AM
           hostmeta endpoint so that the requester can discover the right token
-          endpoint to use. Does OAuth do this automatically?)</t>
+          endpoint to use.)</t>
 
           <figure>
             <preamble>For example:</preamble>
@@ -1240,9 +1241,9 @@ Content-Type: application/json
           requester that the access token provided is expired, revoked,
           malformed, or invalid for other reasons.</t>
 
-          <t>(ISSUE #32: Need more detail here, as above? It needs to convey
+          <t>(ISSUE #32: Need more detail here, as above. It needs to convey
           the AM hostmeta endpoint so that the requester can discover the
-          right token endpoint to use. Does OAuth do this automatically?)</t>
+          right token endpoint to use.)</t>
 
           <figure>
             <preamble>For example:</preamble>
@@ -1344,6 +1345,12 @@ Content-Type: application/json
         IP address is advisory only; the AM MAY ignore it for token validation
         purposes. The host supplies its host access token with the
         request.</t>
+
+        <t>(ISSUE #35: Consider allowing the host to provide a filter in the
+        token validation request to indicate the particular resource
+        sets/scopes it would find acceptable, so that the AM can provide only
+        permissions that potentially match any of them. This approaches a
+        PDP/PEP model.)</t>
 
         <figure>
           <preamble>Example of a request to the token validation endpoint that
@@ -1626,9 +1633,6 @@ Cache-Control: no-store
     <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
 
     <section title="Security Considerations">
-      <t>ISSUE: All drafts are required to have a security considerations
-      section. See RFC 3552.</t>
-
       <t>This specification relies mainly on OAuth security mechanisms for
       protecting the host registration endpoint at the AM so that only a
       properly authorized host can access it on behalf of the intended user.
@@ -1644,12 +1648,13 @@ Cache-Control: no-store
       prevent a host from interacting with a registration area not its
       own.</t>
 
-      <t>(ISSUE#18: Other stuff goes here too. Provide commentary on any
-      requirements layered on the forthcoming OAuth security considerations
-      section; discuss UMA-layer implications for more meaningful
-      authentication of requesters/requesting parties; discuss implications of
-      user-mediated AM/host trust model; discuss short-lived token technique
-      for lightweight requester correlation...)</t>
+      <t>(ISSUE#18: All drafts are required to have a security considerations
+      section. See RFC 3552. Other stuff goes here too. Provide commentary on
+      any requirements layered on the forthcoming OAuth security
+      considerations section; discuss UMA-layer implications for more
+      meaningful authentication of requesters/requesting parties; discuss
+      implications of user-mediated AM/host trust model; discuss short-lived
+      token technique for lightweight requester correlation...)</t>
     </section>
 
     <section title="Privacy Considerations">
@@ -1703,8 +1708,8 @@ Cache-Control: no-store
     <section title="Issues">
       <t>Catalog of issues (some noted within the text above as well,
       indicated by "ISSUE"):<list style="numbers">
-          <t>ISSUE#01: Need to specify options for claim formats in the
-          XRD.</t>
+          <t>ISSUE#01: REPLACED BY ISSUE #17. (Need to specify options for
+          claim formats in the XRD.)</t>
 
           <t>ISSUE#02: RESOLVED. (Need to clarify how the requester's user
           authorization endpoint would be used in an UMA (vs. an OAuth)
@@ -1722,8 +1727,9 @@ Cache-Control: no-store
           interaction type doesn't have its own section.) RESOLUTION: New
           section added. EDITED IN: Rev 09 (I think).</t>
 
-          <t>ISSUE#04: Need to specify the format of the token validation
-          request message. Can Maciej supply what they're using?</t>
+          <t>ISSUE#04: REPLACED BY ISSUE #32. (Need to specify the format of
+          the token validation request message. Can Maciej supply what they're
+          using?)</t>
 
           <t>ISSUE#05: When the token is invalid, what's the current OAuth
           thinking on what we should return? Is there any reason not to copy
@@ -1731,32 +1737,34 @@ Cache-Control: no-store
           of "invalid" be used, and returned as success (unifying the
           different kinds of responses to the validation request)?</t>
 
-          <t>ISSUE#06: Need to complete the design of the requested-scope
+          <t>ISSUE#06: Need to complete the design of the permission
           registration interaction and its associated error messages.</t>
 
           <t>ISSUE#07: Need to complete the design of the authorization
           request interaction and its associated error messages.</t>
 
-          <t>ISSUE#08: Sort out whether resource set descriptions are supposed
-          to use scope URIs or scope identifiers! It's inconsistent now.</t>
+          <t>ISSUE#08: RESOLVED. (Sort out whether resource set descriptions
+          are supposed to use scope URIs or scope identifiers.) EDITED IN: Rev
+          11.</t>
 
-          <t>ISSUE#09: Move the resource registration API section to be a
-          subsection under the previous big section.</t>
+          <t>ISSUE#09: RESOLVED. (Move the resource registration API section
+          to be a subsection under the previous big section.) EDITED IN: Rev
+          11.</t>
 
           <t>ISSUE#10: RESOLVED. (Copy over the resource set description and
           scope description content.) RESOLUTION: Copied over. EDITED IN: Rev
           07 (I think).</t>
 
-          <t>ISSUE#11:RESOLVED. Refer to OAuth processes for getting a token
+          <t>ISSUE#11:RESOLVED. (Refer to OAuth processes for getting a token
           "autonomously" here? Currently there is no section for the
-          requester-AM token-getting interaction. RESOLUTION: A new section
+          requester-AM token-getting interaction.) RESOLUTION: A new section
           has been added, to discuss about the usage of OAuth flow for the
           requester to gen a token from the AM. EDITED IN: Rev 09 (I
           think).</t>
 
           <t>ISSUE#12: If the the AM finds the requester's access token to be
-          invalid, it returns an UMA error message (ISSUE#12: correct? HTTP
-          success?) to indicate that the requester's token is invalid.</t>
+          invalid, it returns an UMA error message (correct? HTTP success?) to
+          indicate that the requester's token is invalid.</t>
 
           <t>ISSUE#13: How to structure the body to include the scope and also
           the requester's access token?</t>
@@ -1772,8 +1780,8 @@ Cache-Control: no-store
           <t>ISSUE#16: Eventually need some special claim types that allow for
           the trusted-claims model to unfold.</t>
 
-          <t>ISSUE#17: fill in. Need to say what claims format is
-          supported.</t>
+          <t>ISSUE#17: Need to say what claims format is supported.
+          "openid-connect" is now listed as the only option, temporarily.</t>
 
           <t>ISSUE#18: Provide commentary on any requirements layered on the
           forthcoming OAuth security considerations section; discuss UMA-layer
@@ -1826,7 +1834,8 @@ Cache-Control: no-store
           <t>ISSUE #28: Okay to require the AM to support the authorization
           code grant type, in addition to optionally supporting the SAML
           bearer assertion grant type, to give a baseline of
-          mandatory-to-implement functionality?</t>
+          mandatory-to-implement functionality? Lukasz and Eve agree so
+          far.</t>
 
           <t>ISSUE #29: Should we extend the resource set (and/or scope)
           description parameters along the lines of the SMART project? Related
@@ -1835,8 +1844,10 @@ Cache-Control: no-store
           <t>ISSUE #30: We say the {hostid} has to be the client ID, but what
           if the host is in the position of using anonymous credentials for
           some reason? Is that even a possibility in the case of hosts (vs.
-          requesters)? Should we identify this more obviously as a
-          constraint?</t>
+          requesters)? Should we identify this more obviously as a constraint?
+          Lukasz and Eve think it should be identified as a constraint,
+          meaning that if dynamic registration is used, it has to support
+          truly unique client credential issuance.</t>
 
           <t>ISSUE #31: Should the response to creating or updating a resource
           set description play back the just-registered description? See how
@@ -1844,12 +1855,23 @@ Cache-Control: no-store
 
           <t>ISSUE #32: Need to add back detail on how the host tells the
           requester which AM to go to so that it can discover the token
-          endpoint and authorization endpoint.</t>
+          endpoint and authorization endpoint. Lukasz and Maciej will flesh
+          this out with their own message examples.</t>
 
           <t>ISSUE #33: Should it be possible to have an "implicit resource
           set" somehow that (in syntactic-sugar fashion) allows permissions to
           be passed around much as scopes already are passed around in plain
           OAuth?</t>
+
+          <t>ISSUE #34: Should we have only one host registration endoint, or
+          do we need two: one for resource set registration and one for
+          permission registration?</t>
+
+          <t>ISSUE #35: Consider allowing the host to provide a filter in the
+          token validation request to indicate the particular resource
+          sets/scopes it would find acceptable, so that the AM can provide
+          only permissions that potentially match any of them. This approaches
+          a PDP/PEP model.</t>
         </list></t>
     </section>
   </middle>
@@ -1993,6 +2015,9 @@ Cache-Control: no-store
 
     <section anchor="History" title="Document History">
       <t>NOTE: To be removed by RFC editor before publication as an RFC</t>
+
+      <t>Changes in Rev 12: See notes from 27 Jun 2011 ad hoc call: <eref
+      target="http://groups.google.com/group/kantara-initiative-uma-wg/browse_frm/thread/774ec41d3475c2fd"></eref>.</t>
 
       <t>Changes in Rev 11:<list style="symbols">
           <t>Removed the requester user authorization endpoint, as it is now
