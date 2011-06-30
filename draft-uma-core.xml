@@ -1150,7 +1150,7 @@ Content-Type: application/json
           requester, the requesting party on whose behalf it is acting, this
           host, this authorizing user, and this AM, to be reused for all
           permissions to access any of the user's protected resources at this
-          host that are protected by this AM.</t>
+          host that are protected by this AM. </t>
 
           <t>Any real-time authorizing user (resource owner) consent required
           by policy is gathered at the time of claim requests, rather than at
